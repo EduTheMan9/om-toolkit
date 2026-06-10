@@ -4,12 +4,15 @@ import streamlit as st
 from app.examples import DISPATCH_EXAMPLES, JOHNSON_EXAMPLES
 from app.scheduling_charts import rules_gantt, two_machine_gantt
 from core.scheduling import (
+    MAX_OPTIMAL_JOBS,
     RULES,
     FlowShopJob,
     Job,
     build_schedule,
     flow_shop_schedule,
     johnson_sequence,
+    min_total_tardiness,
+    moore_hodgson,
     schedule_metrics,
     validate_flow_shop_jobs,
     validate_jobs,
@@ -58,33 +61,37 @@ with dispatch_tab:
         st.stop()
 
     schedules = {rule: build_schedule(order(jobs)) for rule, order in RULES.items()}
+    # exact optimizers alongside the rules of thumb
+    schedules["Moore–Hodgson"] = build_schedule(moore_hodgson(jobs))
+    if len(jobs) <= MAX_OPTIMAL_JOBS:
+        optimal_seq, _ = min_total_tardiness(jobs)
+        schedules["Optimal total tardiness"] = build_schedule(optimal_seq)
 
+    metrics = {name: schedule_metrics(sched, jobs) for name, sched in schedules.items()}
     comparison = pd.DataFrame(
         {
             "Sequence": [" → ".join(s.id for s in sched) for sched in schedules.values()],
-            "Avg completion": [
-                f"{schedule_metrics(sched, jobs)['avg_completion_time']:.2f}"
-                for sched in schedules.values()
-            ],
-            "Avg tardiness": [
-                f"{schedule_metrics(sched, jobs)['avg_tardiness']:.2f}"
-                for sched in schedules.values()
-            ],
-            "Max tardiness": [
-                f"{schedule_metrics(sched, jobs)['max_tardiness']:g}"
-                for sched in schedules.values()
-            ],
-            "Tardy jobs": [
-                schedule_metrics(sched, jobs)["num_tardy"] for sched in schedules.values()
-            ],
+            "Avg completion": [f"{m['avg_completion_time']:.2f}" for m in metrics.values()],
+            "Total tardiness": [f"{m['total_tardiness']:g}" for m in metrics.values()],
+            "Max tardiness": [f"{m['max_tardiness']:g}" for m in metrics.values()],
+            "Tardy jobs": [m["num_tardy"] for m in metrics.values()],
         },
         index=list(schedules),
     )
     st.dataframe(comparison, width="stretch", key="rule_comparison")
     st.caption(
-        "Classic results to look for: SPT minimizes average completion/flow "
-        "time; EDD minimizes maximum lateness."
+        "Each row is optimal for a different objective: SPT → average "
+        "completion time, EDD → maximum lateness, Moore–Hodgson → number of "
+        "tardy jobs, and the last row is the exact minimum-total-tardiness "
+        f"sequence (NP-hard in general; solved exactly up to {MAX_OPTIMAL_JOBS} "
+        "jobs). There is no sequence that wins them all at once."
     )
+    if len(jobs) > MAX_OPTIMAL_JOBS:
+        st.info(
+            f"Exact total-tardiness optimization is hidden above "
+            f"{MAX_OPTIMAL_JOBS} jobs — its search space doubles with every "
+            "job added (that's NP-hardness in practice)."
+        )
 
     due_dates = {j.id: j.due_date for j in jobs}
     st.plotly_chart(rules_gantt(schedules, due_dates), width="stretch", key="rules_gantt")
@@ -132,5 +139,6 @@ with johnson_tab:
     st.caption(
         f"Machine 2 is idle {schedule.makespan - m2_busy:g} of {schedule.makespan:g} "
         "time units — Johnson's rule front-loads short machine-1 jobs precisely "
-        "to keep that idle time small."
+        "to keep that idle time small. For two machines this sequence is "
+        "provably optimal: no other order has a smaller makespan."
     )

@@ -52,6 +52,7 @@ def schedule_metrics(schedule: list[ScheduledJob], jobs: list[Job]) -> dict:
     return {
         "avg_completion_time": sum(completions) / len(completions),
         "avg_tardiness": sum(tardiness) / len(tardiness),
+        "total_tardiness": sum(tardiness),
         "max_tardiness": max(tardiness),
         "num_tardy": sum(1 for t in tardiness if t > 0),
     }

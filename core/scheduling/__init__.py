@@ -7,8 +7,10 @@ from .johnson import (
     validate_flow_shop_jobs,
 )
 from .models import FlowShopJob, Job, ScheduledJob
+from .optimal import MAX_OPTIMAL_JOBS, min_total_tardiness, moore_hodgson
 
 __all__ = [
+    "MAX_OPTIMAL_JOBS",
     "RULES",
     "FlowShopJob",
     "Job",
@@ -17,6 +19,8 @@ __all__ = [
     "build_schedule",
     "flow_shop_schedule",
     "johnson_sequence",
+    "min_total_tardiness",
+    "moore_hodgson",
     "schedule_metrics",
     "validate_flow_shop_jobs",
     "validate_jobs",

@@ -49,6 +49,22 @@ app/
 `app/examples.py` gains dispatching and flow-shop presets. Roadmaps in
 `Home.py`, `README.md`, `CLAUDE.md` flip module 3 to available.
 
+## Amendment (2026-06-11): exact optimizers
+
+Added on user request ("optimize to the most efficient way possible").
+"Most efficient" depends on the objective, so `core/scheduling/optimal.py`
+adds the two objectives the rules don't already solve optimally:
+
+- **Moore–Hodgson** — provably minimal number of tardy jobs, O(n log n).
+  Ejected jobs are appended after the on-time jobs in ejection order; the
+  ejection tie (equal longest processing time) keeps the earliest in EDD order.
+- **min_total_tardiness** — exact subset DP (the problem is NP-hard); capped
+  at `MAX_OPTIMAL_JOBS = 15` jobs. dp[S] chooses the last job of subset S,
+  which always completes at sum(processing times of S).
+
+Both appear as extra rows in the UI comparison table; the comparison gains a
+"Total tardiness" column (also added to `schedule_metrics`).
+
 ## Hand-traced validation examples
 
 **Dispatching** — jobs (p, due): A(6,8) B(2,6) C(8,18) D(3,15) E(9,23).
