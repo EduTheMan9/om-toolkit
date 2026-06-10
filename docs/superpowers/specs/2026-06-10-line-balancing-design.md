@@ -74,7 +74,8 @@ circular precedence, non-positive durations, any task duration > cycle time
 ## UI (milestone 5)
 
 Editable task table (`st.data_editor`), cycle time entered directly or derived
-from demand + available time, rendered precedence diagram (NetworkX + Plotly),
+from demand + available time, rendered precedence diagram (Plotly, laid out
+by Kilbridge column — NetworkX turned out unnecessary and was dropped),
 visual of tasks grouped into stations per heuristic, side-by-side metrics
 comparison table, preset example selector.
 
