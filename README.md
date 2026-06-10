@@ -9,7 +9,7 @@ student. (`GO` = *Gestão de Operações*, Portuguese for Operations Management.
 | # | Module | Status |
 |---|--------|--------|
 | 1 | **Assembly Line Balancing** — Largest Candidate Rule, Ranked Positional Weight, Kilbridge–Wester | ✅ available |
-| 2 | Process analysis & bottleneck — capacity, utilization, Little's Law | planned |
+| 2 | **Process analysis & bottleneck** — capacity, utilization, implied utilization, Little's Law | ✅ available |
 | 3 | Scheduling — Johnson's rule, dispatching rules, Gantt charts | planned |
 | 4 | MRP & lot-sizing — EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin | planned |
 | 5 | Cellular manufacturing — rank order clustering | planned |
@@ -22,6 +22,13 @@ derive it from demand, and compare three classic balancing heuristics side by
 side: station assignments, line efficiency, balance delay, idle times, and
 smoothness index — with a rendered precedence diagram and preloaded example
 datasets.
+
+## Process Analysis & Bottleneck
+
+Describe a process as a sequence of resources (processing time + number of
+servers), optionally with demand: get the bottleneck, process capacity, flow
+rate, utilization and implied utilization per resource, and unloaded flow
+time — plus a Little's Law calculator (I = R × T).
 
 ## Run locally
 

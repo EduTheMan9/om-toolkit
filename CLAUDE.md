@@ -11,8 +11,8 @@ The two goals, in priority order:
 2. **Portfolio** — a deployed app other IEM students can use, with a clean GitHub repo and commit history.
 
 ### Roadmap (build one module at a time)
-1. **Assembly Line Balancing** ← Phase 1, current focus
-2. Process analysis & bottleneck (capacity, utilization, Little's Law)
+1. **Assembly Line Balancing** ✅ done (Phase 1)
+2. **Process analysis & bottleneck** ✅ done (Phase 2)
 3. Scheduling (Johnson's rule, dispatching rules, Gantt charts)
 4. MRP & lot-sizing (EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin)
 5. Cellular manufacturing (rank order clustering)

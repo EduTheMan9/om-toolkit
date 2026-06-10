@@ -9,6 +9,7 @@ st.write(
 )
 
 st.page_link("pages/1_Line_Balancing.py", label="Assembly Line Balancing", icon="⚖️")
+st.page_link("pages/2_Process_Analysis.py", label="Process Analysis & Bottleneck", icon="🔍")
 
 st.subheader("Roadmap")
 st.markdown(
@@ -16,7 +17,7 @@ st.markdown(
 | Module | Status |
 |---|---|
 | Assembly Line Balancing | ✅ available |
-| Process analysis & bottleneck (capacity, utilization, Little's Law) | planned |
+| Process analysis & bottleneck (capacity, utilization, Little's Law) | ✅ available |
 | Scheduling (Johnson's rule, dispatching rules, Gantt charts) | planned |
 | MRP & lot-sizing (EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin) | planned |
 | Cellular manufacturing (rank order clustering) | planned |
