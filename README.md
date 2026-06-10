@@ -10,7 +10,7 @@ student. (`GO` = *Gestão de Operações*, Portuguese for Operations Management.
 |---|--------|--------|
 | 1 | **Assembly Line Balancing** — Largest Candidate Rule, Ranked Positional Weight, Kilbridge–Wester | ✅ available |
 | 2 | **Process analysis & bottleneck** — capacity, utilization, implied utilization, Little's Law | ✅ available |
-| 3 | Scheduling — Johnson's rule, dispatching rules, Gantt charts | planned |
+| 3 | **Scheduling** — dispatching rules (FCFS/SPT/EDD/LPT), Johnson's rule, Gantt charts | ✅ available |
 | 4 | MRP & lot-sizing — EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin | planned |
 | 5 | Cellular manufacturing — rank order clustering | planned |
 | 6 | Productivity metrics | planned |

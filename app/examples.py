@@ -77,3 +77,50 @@ PROCESS_EXAMPLES = {
         ],
     },
 }
+
+DISPATCH_EXAMPLES = {
+    "Five jobs, one machine": {
+        "description": "The worked example from the test suite. Row order = arrival "
+        "order (FCFS). Watch EDD cut the number of late jobs.",
+        "rows": [
+            {"Job": "A", "Processing time": 6.0, "Due date": 8.0},
+            {"Job": "B", "Processing time": 2.0, "Due date": 6.0},
+            {"Job": "C", "Processing time": 8.0, "Due date": 18.0},
+            {"Job": "D", "Processing time": 3.0, "Due date": 15.0},
+            {"Job": "E", "Processing time": 9.0, "Due date": 23.0},
+        ],
+    },
+    "Print shop (6 orders)": {
+        "description": "Tight due dates early in the list - no rule saves every order.",
+        "rows": [
+            {"Job": "P1", "Processing time": 4.0, "Due date": 5.0},
+            {"Job": "P2", "Processing time": 7.0, "Due date": 9.0},
+            {"Job": "P3", "Processing time": 2.0, "Due date": 12.0},
+            {"Job": "P4", "Processing time": 5.0, "Due date": 16.0},
+            {"Job": "P5", "Processing time": 3.0, "Due date": 20.0},
+            {"Job": "P6", "Processing time": 6.0, "Due date": 28.0},
+        ],
+    },
+}
+
+JOHNSON_EXAMPLES = {
+    "Five jobs, two machines": {
+        "description": "The worked example from the test suite (makespan 24).",
+        "rows": [
+            {"Job": "J1", "Machine 1 time": 3.0, "Machine 2 time": 6.0},
+            {"Job": "J2", "Machine 1 time": 5.0, "Machine 2 time": 2.0},
+            {"Job": "J3", "Machine 1 time": 1.0, "Machine 2 time": 2.0},
+            {"Job": "J4", "Machine 1 time": 6.0, "Machine 2 time": 6.0},
+            {"Job": "J5", "Machine 1 time": 7.0, "Machine 2 time": 5.0},
+        ],
+    },
+    "Paint & dry (4 jobs)": {
+        "description": "Painting booth feeds a drying oven.",
+        "rows": [
+            {"Job": "W1", "Machine 1 time": 4.0, "Machine 2 time": 7.0},
+            {"Job": "W2", "Machine 1 time": 8.0, "Machine 2 time": 3.0},
+            {"Job": "W3", "Machine 1 time": 5.0, "Machine 2 time": 5.0},
+            {"Job": "W4", "Machine 1 time": 2.0, "Machine 2 time": 6.0},
+        ],
+    },
+}
