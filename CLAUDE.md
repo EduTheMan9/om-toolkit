@@ -40,13 +40,13 @@ pytest tests/test_<module>.py -k <test_name>   # run a single test
 - `app/` — Streamlit UI only.
 - `tests/` — pytest tests for `core/`.
 
-## The quality rule that overrides everything
+## Validation rule
 
-Solvers are validated against **exercises the user solved by hand in their course**:
-- Before implementing each heuristic, **ask the user for 1–2 hand-solved exercises** (task data, cycle time, step-by-step solution) and encode them as pytest test cases.
-- A solver is only "done" when it reproduces the user's hand-calculated solutions.
-- If code output differs from the hand solution, do **not** silently change the code or assume the user is wrong. Walk through the algorithm step by step together until you find whether the bug is in the code or in the hand calculation.
-- Textbook conventions vary (tie-breaking rules, smoothness index definitions, etc.). When a convention could differ between textbooks, **ask what the user's course used** instead of assuming.
+(Amended 2026-06-10: the user dropped the original "tests from my hand-solved exercises" rule — do not ask for hand-solved exercises.)
+
+- Each solver is validated against a **worked example traced step by step by hand** before the test is written; the trace lives in comments/docstrings near the test.
+- Confirmed course conventions (encoded in `tests/test_metrics.py` — keep):
+  tie-breaking by **lower task ID**; smoothness index **vs cycle time** `SI = sqrt(Σ(CT − STi)²)`; cycle time from demand **rounded down**; efficiency `Σt/(n·CT)`; balance delay `1 − efficiency`; min stations `ceil(Σt/CT)`; Kilbridge–Wester within-column order: **largest duration first**.
 
 ## Phase 1 scope: Assembly Line Balancing
 
@@ -55,11 +55,10 @@ Solvers are validated against **exercises the user solved by hand in their cours
 - **Metrics:** cycle time, theoretical minimum stations, station assignments, line efficiency, balance delay, idle time per station, smoothness index.
 - **UI:** editable task table, precedence diagram, station-grouping visual, side-by-side heuristic comparison, 2–3 preloaded example datasets.
 
-## Working style (teaching mode)
+## Working style
 
-- **Plan before code.** Present plan and open questions; wait for approval before writing anything.
-- **Small steps with checkpoints.** After each milestone, stop and walk the user through what was written and why, file by file. Don't move on until they confirm understanding.
-- **Explain algorithms in plain language first**, before implementing; have the user confirm the logic matches what they learned in class.
+(Amended 2026-06-10: the user relaxed the original heavy teaching mode — "just do this project taking into account the best operation management ways and implement them." Implement directly; keep explanations brief and educational; don't block on confirmation gates.)
+
 - When the user asks questions about code, answer by teaching, not just fixing.
 - The user may write in Portuguese; all code, comments, commit messages, and documentation stay in English.
 - Simple, readable code over clever code. Comment the *engineering reasoning*, not obvious syntax.

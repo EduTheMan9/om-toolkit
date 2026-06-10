@@ -53,15 +53,17 @@ hide the distinction the owner needs to explain in interviews.
 | Balance delay | `1 − efficiency` |
 | Theoretical min stations | `ceil(Σt / CT)` |
 
-## Open items (resolve at the relevant milestone, never assume)
+## Open items — RESOLVED by amendment (2026-06-10)
 
-- **Kilbridge–Wester within-column ordering:** owner answered "most efficient
-  way possible"; confirm the exact course procedure (likely largest task time
-  first) against the hand-solved KW exercise at milestone 4.
-- **Hand-solved exercises:** collect 1–2 per heuristic from the owner before
-  implementing each (milestones 2–4). A heuristic is done only when it
-  reproduces the owner's hand solutions.
-- **Time units:** confirm with the first exercise (question went unanswered).
+The owner dropped the hand-solved-exercise rule mid-session ("just do this
+project taking into account the best operation management ways"). Resolutions:
+
+- **Kilbridge–Wester within-column ordering:** largest task duration first
+  (standard convention), ties by lower task ID.
+- **Heuristic validation:** worked examples traced step by step by hand,
+  documented next to the tests — no owner exercises required.
+- **Time units:** unit-agnostic; the UI labels durations as time units and
+  lets the example datasets state their own units.
 
 ## Input validation (in `precedence.py`)
 
