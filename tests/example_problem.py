@@ -1,4 +1,4 @@
-"""Shared worked example used to validate all three heuristics.
+r"""Shared worked example used to validate all three heuristics.
 
 Precedence diagram (durations in parentheses), cycle time = 10:
 
