@@ -103,6 +103,30 @@ DISPATCH_EXAMPLES = {
     },
 }
 
+LOT_SIZING_EXAMPLES = {
+    "Six-period demo": {
+        "description": "The worked example from the test suite. Silver-Meal "
+        "happens to find the optimum here - Wagner-Whitin guarantees it.",
+        "setup_cost": 150.0,
+        "holding_cost": 1.0,
+        "demands": [50.0, 60.0, 90.0, 70.0, 30.0, 100.0],
+    },
+    "Lumpy demand (8 periods)": {
+        "description": "Demand spikes with quiet periods in between - exactly "
+        "where lot-for-lot wastes setups and EOQ-style fixed lots waste holding.",
+        "setup_cost": 200.0,
+        "holding_cost": 2.0,
+        "demands": [10.0, 80.0, 0.0, 120.0, 5.0, 0.0, 90.0, 40.0],
+    },
+    "Cheap setups (6 periods)": {
+        "description": "When setups are cheap relative to holding, ordering "
+        "every period (lot-for-lot) is hard to beat.",
+        "setup_cost": 30.0,
+        "holding_cost": 3.0,
+        "demands": [40.0, 50.0, 35.0, 60.0, 45.0, 55.0],
+    },
+}
+
 JOHNSON_EXAMPLES = {
     "Five jobs, two machines": {
         "description": "The worked example from the test suite (makespan 24).",
