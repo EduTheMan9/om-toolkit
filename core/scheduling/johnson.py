@@ -28,10 +28,17 @@ def validate_flow_shop_jobs(jobs: list[FlowShopJob]) -> None:
             raise ValueError(f"Job {j.id}: processing times must be positive.")
 
 
-def johnson_sequence(jobs: list[FlowShopJob]) -> list[FlowShopJob]:
+def johnson_sequence_with_steps(
+    jobs: list[FlowShopJob],
+) -> tuple[list[FlowShopJob], list[dict]]:
+    """Johnson's rule that records each pick while it runs, so the UI can
+    replay the algorithm step by step on the user's data.
+    Slots are the 1-based final positions in the sequence."""
     validate_flow_shop_jobs(jobs)
+    n = len(jobs)
     front: list[FlowShopJob] = []
     back: list[FlowShopJob] = []  # built in reverse, flipped at the end
+    steps: list[dict] = []
     remaining = list(jobs)
     while remaining:
         best = min(
@@ -43,11 +50,31 @@ def johnson_sequence(jobs: list[FlowShopJob]) -> list[FlowShopJob]:
             ),
         )
         remaining.remove(best)
-        if best.time_m1 <= best.time_m2:
+        m1_side = best.time_m1 <= best.time_m2
+        if m1_side:
             front.append(best)
+            slot = len(front)
         else:
             back.append(best)
-    return front + back[::-1]
+            slot = n - len(back) + 1
+        steps.append(
+            {
+                "kind": "pick",
+                "job": best.id,
+                "time": min(best.time_m1, best.time_m2),
+                "machine": 1 if m1_side else 2,
+                "placement": "front" if m1_side else "back",
+                "slot": slot,
+            }
+        )
+    sequence = front + back[::-1]
+    steps.append({"kind": "done", "sequence": [j.id for j in sequence]})
+    return sequence, steps
+
+
+def johnson_sequence(jobs: list[FlowShopJob]) -> list[FlowShopJob]:
+    sequence, _ = johnson_sequence_with_steps(jobs)
+    return sequence
 
 
 @dataclass(frozen=True)

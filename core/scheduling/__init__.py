@@ -4,6 +4,7 @@ from .johnson import (
     TwoMachineSchedule,
     flow_shop_schedule,
     johnson_sequence,
+    johnson_sequence_with_steps,
     validate_flow_shop_jobs,
 )
 from .models import FlowShopJob, Job, ScheduledJob
@@ -19,6 +20,7 @@ __all__ = [
     "build_schedule",
     "flow_shop_schedule",
     "johnson_sequence",
+    "johnson_sequence_with_steps",
     "min_total_tardiness",
     "moore_hodgson",
     "schedule_metrics",

@@ -55,6 +55,30 @@ def test_equal_m1_m2_time_counts_as_front():
     assert [j.id for j in johnson_sequence(jobs)] == ["A", "B"]
 
 
+def test_johnson_with_steps_narrates_the_worked_example():
+    """Hand trace of the picks: 1 (J3,M1)->front slot 1; 2 (J2,M2)->back slot 5;
+    3 (J1,M1)->front slot 2; 5 (J5,M2)->back slot 4; 6 (J4, tie->M1)->front slot 3."""
+    from core.scheduling.johnson import johnson_sequence_with_steps
+
+    sequence, steps = johnson_sequence_with_steps(JOBS)
+    assert [j.id for j in sequence] == ["J3", "J1", "J4", "J5", "J2"]
+
+    picks = [
+        (s["job"], s["machine"], s["placement"], s["slot"])
+        for s in steps
+        if s["kind"] == "pick"
+    ]
+    assert picks == [
+        ("J3", 1, "front", 1),
+        ("J2", 2, "back", 5),
+        ("J1", 1, "front", 2),
+        ("J5", 2, "back", 4),
+        ("J4", 1, "front", 3),
+    ]
+    assert steps[0]["time"] == pytest.approx(1.0)
+    assert steps[-1] == {"kind": "done", "sequence": ["J3", "J1", "J4", "J5", "J2"]}
+
+
 @pytest.mark.parametrize(
     "bad, message",
     [
