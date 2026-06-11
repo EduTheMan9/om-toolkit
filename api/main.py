@@ -4,8 +4,10 @@ All domain validation lives in core/'s validate_* functions; they raise
 ValueError with a human-readable message, which we surface as HTTP 422 so
 the frontend can show it inline next to the offending input.
 """
+from pathlib import Path
+
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from api.routers import lot_sizing
 
@@ -21,3 +23,18 @@ async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+DIST_DIR = Path(__file__).resolve().parent.parent / "web" / "dist"
+
+
+@app.get("/{path:path}", include_in_schema=False)
+async def spa(path: str):
+    """Serve the built frontend; unknown paths fall back to index.html so
+    client-side routes (e.g. /lot-sizing) survive refreshes and deep links."""
+    if not DIST_DIR.exists():
+        return JSONResponse(status_code=404, content={"detail": "Frontend not built."})
+    file = DIST_DIR / path
+    if path and file.is_file():
+        return FileResponse(file)
+    return FileResponse(DIST_DIR / "index.html")
