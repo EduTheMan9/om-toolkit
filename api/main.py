@@ -7,7 +7,10 @@ the frontend can show it inline next to the offending input.
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from api.routers import lot_sizing
+
 app = FastAPI(title="OM Toolkit API")
+app.include_router(lot_sizing.router)
 
 
 @app.exception_handler(ValueError)
