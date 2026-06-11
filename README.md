@@ -60,6 +60,8 @@ multifactor productivity — the honest aggregate — moves the other way.
 
 ## Run locally
 
+**Classic app (Streamlit, all six modules):**
+
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # Windows (use source .venv/bin/activate elsewhere)
@@ -67,25 +69,41 @@ pip install -r requirements.txt
 streamlit run app/Home.py
 ```
 
+**New app (React + FastAPI — being rolled out module by module):**
+
+```bash
+pip install -r requirements.txt
+cd web && npm install && npm run build && cd ..
+uvicorn api.main:app --port 8000     # serves API + UI at http://localhost:8000
+```
+
+Dev mode runs them separately: `uvicorn api.main:app --reload --port 8000`
+in one terminal, `cd web && npm run dev` in another (Vite proxies /api).
+
 ## Tests
 
-All solver logic lives in `core/` as pure Python (no Streamlit imports) and is
+All solver logic lives in `core/` as pure Python (no UI imports) and is
 validated against worked examples traced by hand, documented next to the tests.
 
 ```bash
-pytest
+pytest                  # core/ + api/ tests
+cd web && npm test      # frontend unit tests (Vitest)
+cd web && npm run e2e   # browser smoke tests (Playwright)
 ```
 
 ## Project structure
 
 ```
 core/   pure algorithm logic (importable, testable, UI-free)
-app/    Streamlit UI
+api/    FastAPI JSON layer over core/, serves the built frontend
+web/    React + TypeScript + Vite frontend (Clean Lab design system)
+app/    legacy Streamlit UI (kept until the React app reaches parity)
 tests/  pytest suite with hand-traced validation examples
 docs/   design specs and implementation plans
 ```
 
 ## Roadmap
 
-- All six modules are built ✅
-- Deploy to Streamlit Community Cloud
+- All six modules are built in the classic app ✅
+- React redesign: Lot Sizing ✅ — remaining modules rolling out one by one
+- Deploy the FastAPI + React app

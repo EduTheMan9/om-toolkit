@@ -37,8 +37,10 @@ pytest tests/test_<module>.py -k <test_name>   # run a single test
 
 **Strict separation of algorithm logic and UI:**
 - `core/` — all solver/algorithm logic as pure Python with **zero Streamlit imports**, independently testable.
-- `app/` — Streamlit UI only.
-- `tests/` — pytest tests for `core/`.
+- `api/` — FastAPI JSON layer over `core/` (one thin router per module); serves the built frontend.
+- `web/` — React + TypeScript + Vite frontend (Clean Lab design system, see `docs/superpowers/specs/2026-06-11-react-redesign-design.md`).
+- `app/` — legacy Streamlit UI, kept until the React app reaches feature parity.
+- `tests/` — pytest tests for `core/` and `api/`; `web/` has Vitest unit tests and Playwright smoke tests (`npm test`, `npm run e2e` in `web/`).
 
 ## Validation rule
 
