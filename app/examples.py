@@ -127,6 +127,42 @@ LOT_SIZING_EXAMPLES = {
     },
 }
 
+CELLULAR_EXAMPLES = {
+    "Two clean cells (4×5)": {
+        "description": "The worked example from the test suite: ROC uncovers "
+        "two near-perfect cells (one void, no exceptional elements).",
+        "matrix": [
+            [1, 0, 0, 1, 0],
+            [0, 1, 1, 0, 1],
+            [1, 0, 0, 1, 0],
+            [0, 1, 1, 0, 0],
+        ],
+    },
+    "Bottleneck machine (5×7)": {
+        "description": "Machine M5 serves parts from two families - no "
+        "reordering can avoid exceptional elements, only minimize them.",
+        "matrix": [
+            [1, 0, 0, 1, 0, 0, 1],
+            [0, 1, 0, 0, 1, 0, 0],
+            [1, 0, 0, 1, 0, 0, 0],
+            [0, 1, 0, 0, 1, 1, 0],
+            [0, 0, 1, 0, 0, 1, 1],
+        ],
+    },
+    "Scrambled blocks (6×8)": {
+        "description": "Three perfect cells hidden by the row order - watch "
+        "ROC recover a block diagonal with grouping efficacy 1.",
+        "matrix": [
+            [0, 1, 0, 0, 0, 1, 0, 0],
+            [1, 0, 0, 1, 0, 0, 1, 0],
+            [0, 0, 1, 0, 1, 0, 0, 1],
+            [0, 1, 0, 0, 0, 1, 0, 0],
+            [1, 0, 0, 1, 0, 0, 1, 0],
+            [0, 0, 1, 0, 1, 0, 0, 1],
+        ],
+    },
+}
+
 JOHNSON_EXAMPLES = {
     "Five jobs, two machines": {
         "description": "The worked example from the test suite (makespan 24).",
