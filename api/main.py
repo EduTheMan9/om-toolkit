@@ -9,9 +9,10 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 
-from api.routers import lot_sizing, scheduling
+from api.routers import line_balancing, lot_sizing, scheduling
 
 app = FastAPI(title="OM Toolkit API")
+app.include_router(line_balancing.router)
 app.include_router(lot_sizing.router)
 app.include_router(scheduling.router)
 
