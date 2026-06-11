@@ -10,7 +10,11 @@ from .metrics import (
 )
 from .models import Station, Task
 from .precedence import validate_tasks
-from .rpw import positional_weights, ranked_positional_weight
+from .rpw import (
+    positional_weights,
+    ranked_positional_weight,
+    ranked_positional_weight_with_steps,
+)
 
 __all__ = [
     "Station",
@@ -23,6 +27,7 @@ __all__ = [
     "line_efficiency",
     "positional_weights",
     "ranked_positional_weight",
+    "ranked_positional_weight_with_steps",
     "smoothness_index",
     "theoretical_min_stations",
     "validate_tasks",

@@ -32,3 +32,42 @@ def test_rpw_worked_example():
 def test_rpw_rejects_invalid_input():
     with pytest.raises(ValueError):
         ranked_positional_weight([Task("A", 99.0)], cycle_time=10.0)
+
+
+def test_rpw_with_steps_narrates_the_worked_example():
+    """The docstring trace above, as recorded steps: every scan's skips
+    (blocked / doesn't fit) land just before the assign or close they led to."""
+    from core.line_balancing.rpw import ranked_positional_weight_with_steps
+
+    stations, steps = ranked_positional_weight_with_steps(TASKS, CYCLE_TIME)
+    assert station_ids(stations) == [["A", "C"], ["E", "B"], ["D", "F"]]
+
+    assert steps[0]["kind"] == "rank"
+    assert steps[0]["order"] == ["A", "C", "E", "B", "D", "F"]
+    assert steps[0]["weights"]["A"] == pytest.approx(24.0)
+
+    assigns = [(s["station"], s["task"]) for s in steps if s["kind"] == "assign"]
+    assert assigns == [(1, "A"), (1, "C"), (2, "E"), (2, "B"), (3, "D"), (3, "F")]
+
+    skips = [(s["station"], s["task"], s["reason"]) for s in steps if s["kind"] == "skip"]
+    assert skips == [
+        (1, "E", "no_fit"),
+        (1, "B", "no_fit"),
+        (1, "D", "blocked"),
+        (1, "F", "blocked"),
+        (2, "D", "no_fit"),
+        (2, "F", "blocked"),
+    ]
+    blocked_d = next(s for s in steps if s["kind"] == "skip" and s["task"] == "D")
+    assert blocked_d["missing"] == ["B"]
+
+    closes = [
+        (s["station"], s["tasks"], s["total"], s["idle"])
+        for s in steps
+        if s["kind"] == "close"
+    ]
+    assert closes == [
+        (1, ["A", "C"], 9.0, 1.0),
+        (2, ["E", "B"], 9.0, 1.0),
+        (3, ["D", "F"], 6.0, 4.0),
+    ]

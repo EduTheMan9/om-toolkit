@@ -7,7 +7,7 @@ of followers are never left waiting at the end of the line.
 
 Ties broken by lower task ID (course convention).
 """
-from .assignment import assign_in_order
+from .assignment import assign_in_order_with_steps
 from .models import Station, Task
 from .precedence import validate_tasks
 
@@ -37,8 +37,21 @@ def positional_weights(tasks: list[Task]) -> dict[str, float]:
     }
 
 
-def ranked_positional_weight(tasks: list[Task], cycle_time: float) -> list[Station]:
+def ranked_positional_weight_with_steps(
+    tasks: list[Task], cycle_time: float
+) -> tuple[list[Station], list[dict]]:
+    """RPW that records its ranking and every assignment decision, so the UI
+    can replay the heuristic step by step on the user's data."""
     validate_tasks(tasks, cycle_time)  # also guarantees the recursion above terminates
     weights = positional_weights(tasks)
     candidates = sorted(tasks, key=lambda t: (-weights[t.id], t.id))
-    return assign_in_order(candidates, cycle_time)
+    steps: list[dict] = [
+        {"kind": "rank", "order": [t.id for t in candidates], "weights": weights}
+    ]
+    stations, assign_steps = assign_in_order_with_steps(candidates, cycle_time)
+    return stations, steps + assign_steps
+
+
+def ranked_positional_weight(tasks: list[Task], cycle_time: float) -> list[Station]:
+    stations, _ = ranked_positional_weight_with_steps(tasks, cycle_time)
+    return stations
