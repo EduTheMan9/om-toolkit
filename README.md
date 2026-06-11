@@ -105,5 +105,5 @@ docs/   design specs and implementation plans
 ## Roadmap
 
 - All six modules are built in the classic app ✅
-- React redesign: Lot Sizing ✅ — remaining modules rolling out one by one
+- React redesign: Lot Sizing ✅, Scheduling ✅ — remaining modules rolling out one by one
 - Deploy the FastAPI + React app
