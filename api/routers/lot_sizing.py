@@ -3,7 +3,13 @@ from pydantic import BaseModel
 
 from fastapi import APIRouter
 
-from core.lot_sizing import economic_order_quantity
+from core.lot_sizing import (
+    economic_order_quantity,
+    evaluate_plan,
+    lot_for_lot,
+    silver_meal_with_steps,
+    wagner_whitin,
+)
 
 router = APIRouter(prefix="/api/lot-sizing", tags=["lot-sizing"])
 
@@ -55,4 +61,46 @@ def eoq(req: EoqRequest) -> EoqResponse:
             holding=holding,
             total=[o + h for o, h in zip(ordering, holding)],
         ),
+    )
+
+
+class DynamicRequest(BaseModel):
+    demands: list[float]
+    setup_cost: float
+    holding_cost: float
+
+
+class PlanResult(BaseModel):
+    orders: list[float]
+    setups: int
+    setup_cost: float
+    holding_cost: float
+    total_cost: float
+    ending_inventory: list[float]
+
+
+class DynamicResponse(BaseModel):
+    plans: dict[str, PlanResult]
+    steps: list[dict]
+
+
+@router.post("/dynamic", response_model=DynamicResponse)
+def dynamic(req: DynamicRequest) -> DynamicResponse:
+    sm_orders, sm_steps = silver_meal_with_steps(
+        req.demands, req.setup_cost, req.holding_cost
+    )
+    plans = {
+        "lot_for_lot": lot_for_lot(req.demands, req.setup_cost, req.holding_cost),
+        "silver_meal": sm_orders,
+        "wagner_whitin": wagner_whitin(req.demands, req.setup_cost, req.holding_cost),
+    }
+    return DynamicResponse(
+        plans={
+            name: PlanResult(
+                orders=orders,
+                **evaluate_plan(req.demands, orders, req.setup_cost, req.holding_cost),
+            )
+            for name, orders in plans.items()
+        },
+        steps=sm_steps,
     )
