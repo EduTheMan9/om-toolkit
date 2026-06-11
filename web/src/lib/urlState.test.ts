@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  decodeBalancing,
   decodeDispatch,
   decodeDynamic,
   decodeJohnson,
+  encodeBalancing,
   encodeDispatch,
   encodeDynamic,
   encodeJohnson,
@@ -38,5 +40,37 @@ describe("scheduling URL state", () => {
     expect(decodeDispatch("")).toBeNull();
     expect(decodeDispatch("?j=A,1")).toBeNull(); // wrong arity
     expect(decodeDispatch("?j=A,x,2")).toBeNull(); // non-numeric
+  });
+});
+
+describe("line balancing URL state", () => {
+  it("round-trips tasks with predecessors and a direct cycle time", () => {
+    const inputs = {
+      tasks: [
+        { id: "A", duration: 5, predecessors: [] },
+        { id: "F", duration: 4, predecessors: ["D", "E"] },
+      ],
+      cycleTime: 10,
+      availableTime: null,
+      demand: null,
+    };
+    expect(decodeBalancing("?" + encodeBalancing(inputs))).toEqual(inputs);
+  });
+
+  it("round-trips demand-mode inputs", () => {
+    const inputs = {
+      tasks: [{ id: "A", duration: 5, predecessors: [] }],
+      cycleTime: null,
+      availableTime: 480,
+      demand: 70,
+    };
+    expect(decodeBalancing("?" + encodeBalancing(inputs))).toEqual(inputs);
+  });
+
+  it("returns null for malformed task strings or missing cycle info", () => {
+    expect(decodeBalancing("")).toBeNull();
+    expect(decodeBalancing("?t=A,5,&ct=abc")).toBeNull();
+    expect(decodeBalancing("?t=A,x,&ct=10")).toBeNull();
+    expect(decodeBalancing("?t=A,5,")).toBeNull(); // no ct and no at+dm
   });
 });

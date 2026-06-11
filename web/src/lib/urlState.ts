@@ -83,3 +83,66 @@ export function decodeJohnson(search: string): JohnsonJob[] | null {
   if (!triples) return null;
   return triples.map(([id, timeM1, timeM2]) => ({ id, timeM1, timeM2 }));
 }
+
+export interface BalancingTask {
+  id: string;
+  duration: number;
+  predecessors: string[];
+}
+
+export interface BalancingInputs {
+  tasks: BalancingTask[];
+  cycleTime: number | null; // direct mode...
+  availableTime: number | null; // ...or demand mode (both null-able, one set)
+  demand: number | null;
+}
+
+// Tasks encode as t=id,duration,pred.pred;... (predecessors joined by ".").
+// Cycle time is ct=10 (direct) or at=480&dm=70 (derived, floored server-side).
+export function encodeBalancing(inputs: BalancingInputs): string {
+  const params = new URLSearchParams();
+  params.set(
+    "t",
+    inputs.tasks
+      .map((t) => [t.id, t.duration, t.predecessors.join(".")].join(","))
+      .join(";"),
+  );
+  if (inputs.cycleTime !== null) {
+    params.set("ct", String(inputs.cycleTime));
+  } else {
+    params.set("at", String(inputs.availableTime));
+    params.set("dm", String(inputs.demand));
+  }
+  return params.toString();
+}
+
+export function decodeBalancing(search: string): BalancingInputs | null {
+  const params = new URLSearchParams(search);
+  const raw = params.get("t");
+  if (!raw) return null;
+  const tasks: BalancingTask[] = [];
+  for (const part of raw.split(";")) {
+    const fields = part.split(",");
+    if (fields.length !== 3 || !fields[0]) return null;
+    const duration = Number(fields[1]);
+    if (Number.isNaN(duration)) return null;
+    tasks.push({
+      id: fields[0],
+      duration,
+      predecessors: fields[2] ? fields[2].split(".").filter(Boolean) : [],
+    });
+  }
+  const ct = params.get("ct");
+  if (ct !== null) {
+    const cycleTime = Number(ct);
+    if (Number.isNaN(cycleTime)) return null;
+    return { tasks, cycleTime, availableTime: null, demand: null };
+  }
+  const at = params.get("at");
+  const dm = params.get("dm");
+  if (at === null || dm === null) return null;
+  const availableTime = Number(at);
+  const demand = Number(dm);
+  if (Number.isNaN(availableTime) || Number.isNaN(demand)) return null;
+  return { tasks, cycleTime: null, availableTime, demand };
+}

@@ -101,3 +101,45 @@ export interface JohnsonResponse {
   input_order_makespan: number;
   steps: JohnsonStep[];
 }
+
+export type HeuristicName = "lcr" | "rpw" | "kilbridge_wester";
+
+export interface BalancingStation {
+  index: number;
+  task_ids: string[];
+  total_time: number;
+  idle_time: number;
+}
+
+export interface HeuristicResult {
+  stations: BalancingStation[];
+  num_stations: number;
+  efficiency: number;
+  balance_delay: number;
+  smoothness_index: number;
+}
+
+export interface RpwStep {
+  kind: "rank" | "assign" | "skip" | "close";
+  order?: string[];
+  weights?: Record<string, number>;
+  station?: number;
+  task?: string;
+  duration?: number;
+  remaining?: number;
+  reason?: "blocked" | "no_fit";
+  missing?: string[];
+  tasks?: string[];
+  total?: number;
+  idle?: number;
+}
+
+export interface BalancingResponse {
+  cycle_time: number;
+  total_work: number;
+  min_stations: number;
+  columns: Record<string, number>;
+  weights: Record<string, number>;
+  heuristics: Record<HeuristicName, HeuristicResult>;
+  steps: RpwStep[];
+}
