@@ -3,6 +3,7 @@ from .dynamic import (
     evaluate_plan,
     lot_for_lot,
     silver_meal,
+    silver_meal_with_steps,
     validate_inputs,
     wagner_whitin,
 )
@@ -14,6 +15,7 @@ __all__ = [
     "evaluate_plan",
     "lot_for_lot",
     "silver_meal",
+    "silver_meal_with_steps",
     "validate_inputs",
     "wagner_whitin",
 ]

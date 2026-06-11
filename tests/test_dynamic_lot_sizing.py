@@ -77,3 +77,27 @@ def test_evaluate_plan_rejects_shortages():
 def test_invalid_inputs_rejected(demands, setup, holding, message):
     with pytest.raises(ValueError, match=message):
         validate_inputs(demands, setup, holding)
+
+
+def test_silver_meal_with_steps_narrates_the_worked_example():
+    """Hand trace: lot 1 avg 150 -> 105 (extend) -> 130 (stop);
+    lot 2 avg 150 -> 110 -> 93.33 (extend twice) -> 145 (stop); lot 3 = p6."""
+    from core.lot_sizing.dynamic import silver_meal_with_steps
+
+    orders, steps = silver_meal_with_steps(DEMANDS, S, H)
+    assert orders == silver_meal(DEMANDS, S, H)
+
+    decisions = [s["decision"] for s in steps if s["kind"] == "try_extend"]
+    assert decisions == ["extend", "stop", "extend", "extend", "stop"]
+
+    closes = [
+        (s["lot"], s["start"], s["end"], s["quantity"])
+        for s in steps
+        if s["kind"] == "close_lot"
+    ]
+    assert closes == [(1, 1, 2, 110.0), (2, 3, 5, 190.0), (3, 6, 6, 100.0)]
+
+    first_try = next(s for s in steps if s["kind"] == "try_extend")
+    assert first_try["avg_current"] == pytest.approx(150.0)
+    assert first_try["avg_extended"] == pytest.approx(105.0)
+    assert steps[0] == {"kind": "open_lot", "lot": 1, "period": 1}

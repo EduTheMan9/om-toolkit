@@ -71,28 +71,56 @@ def _lot_cost(
     return setup_cost + holding
 
 
-def silver_meal(demands: list[float], setup_cost: float, holding_cost: float) -> list[float]:
-    """Extend the current lot one period at a time while the average cost
-    per period covered keeps falling; stop at the first increase. Myopic —
-    usually near-optimal, but not guaranteed (that's Wagner-Whitin's job)."""
+def silver_meal_with_steps(
+    demands: list[float], setup_cost: float, holding_cost: float
+) -> tuple[list[float], list[dict]]:
+    """Silver-Meal that records its own decisions while it runs, so the UI
+    can replay the algorithm step by step on the user's data.
+    Periods in steps are 1-based to match course notation."""
     validate_inputs(demands, setup_cost, holding_cost)
     n = len(demands)
     orders = [0.0] * n
+    steps: list[dict] = []
+    lot = 0
     j = 0
     while j < n:
         if demands[j] == 0:  # nothing to cover; no order, no setup
             j += 1
             continue
+        lot += 1
+        steps.append({"kind": "open_lot", "lot": lot, "period": j + 1})
         t = j
         avg = _lot_cost(demands, j, t, setup_cost, holding_cost)  # 1 period covered
         while t + 1 < n:
             next_avg = _lot_cost(demands, j, t + 1, setup_cost, holding_cost) / (t + 2 - j)
-            if next_avg >= avg:
+            decision = "stop" if next_avg >= avg else "extend"
+            steps.append(
+                {
+                    "kind": "try_extend",
+                    "lot": lot,
+                    "period": t + 2,
+                    "avg_current": avg,
+                    "avg_extended": next_avg,
+                    "decision": decision,
+                }
+            )
+            if decision == "stop":
                 break
             avg = next_avg
             t += 1
         orders[j] = sum(demands[j : t + 1])
+        steps.append(
+            {"kind": "close_lot", "lot": lot, "start": j + 1, "end": t + 1, "quantity": orders[j]}
+        )
         j = t + 1
+    return orders, steps
+
+
+def silver_meal(demands: list[float], setup_cost: float, holding_cost: float) -> list[float]:
+    """Extend the current lot one period at a time while the average cost
+    per period covered keeps falling; stop at the first increase. Myopic —
+    usually near-optimal, but not guaranteed (that's Wagner-Whitin's job)."""
+    orders, _ = silver_meal_with_steps(demands, setup_cost, holding_cost)
     return orders
 
 
