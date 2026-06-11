@@ -1,0 +1,12 @@
+.demand-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+.demand-table th { text-align: left; color: var(--muted); font-weight: 400; padding: 4px; }
+.demand-table td { border-top: 1px solid #f1f4f6; padding: 2px 4px; }
+.demand-table td.idx { color: var(--muted); width: 32px; }
+.demand-table input { border: none; border-radius: 4px; padding: 5px 6px; background: transparent; }
+.demand-table input:focus { outline: 1.5px solid var(--accent); background: var(--accent-soft); }
+.demand-table-actions { display: flex; gap: 10px; margin-top: 6px; }
+.demand-table-actions button {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 10px; font-size: 11px; color: var(--subtle);
+}
+.demand-table-hint { font-size: 10px; color: var(--muted); margin-top: 4px; }

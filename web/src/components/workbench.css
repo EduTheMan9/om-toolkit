@@ -1,0 +1,65 @@
+.workbench { display: flex; min-height: 100vh; }
+
+.input-panel {
+  width: 290px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input-panel h1 { font-size: 20px; font-weight: 700; }
+.input-panel .module-sub { margin-top: 2px; font-size: 12px; }
+
+.mode-pills { display: flex; gap: 6px; }
+.mode-pills button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--subtle);
+  border-radius: 99px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.mode-pills button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.results-pane {
+  flex: 1;
+  min-width: 0;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-card {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+  border-color: var(--accent-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hero-card .hero-value { font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.hero-card .hero-detail { font-size: 12px; color: var(--subtle); font-weight: 500; }
+.hero-card .hero-orders {
+  font-family: var(--font-mono);
+  background: var(--rail-bg);
+  color: var(--accent-bright);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.row { display: flex; gap: 10px; }
