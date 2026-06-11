@@ -1,0 +1,79 @@
+"""Dynamic lot sizing — hand-traced validation (see Phase 4 spec).
+
+Demands [50, 60, 90, 70, 30, 100], S = 150, h = 1:
+- Lot-for-lot: 6 setups, total 900.
+- Silver-Meal: lots cover p1-2 / p3-5 / p6 -> orders [110,0,190,0,0,100],
+  total 450 + 190 = 640.
+- Wagner-Whitin DP: f = [150, 210, 360, 430, 490, 640] -> same plan, 640.
+"""
+import pytest
+
+from core.lot_sizing.dynamic import (
+    evaluate_plan,
+    lot_for_lot,
+    silver_meal,
+    validate_inputs,
+    wagner_whitin,
+)
+
+DEMANDS = [50.0, 60.0, 90.0, 70.0, 30.0, 100.0]
+S, H = 150.0, 1.0
+
+
+def test_lot_for_lot_orders_each_periods_demand():
+    orders = lot_for_lot(DEMANDS, S, H)
+    assert orders == DEMANDS
+    cost = evaluate_plan(DEMANDS, orders, S, H)
+    assert cost["setups"] == 6
+    assert cost["holding_cost"] == pytest.approx(0.0)
+    assert cost["total_cost"] == pytest.approx(900.0)
+
+
+def test_lot_for_lot_skips_zero_demand_periods():
+    orders = lot_for_lot([50.0, 0.0, 30.0], S, H)
+    assert orders == [50.0, 0.0, 30.0]
+    assert evaluate_plan([50.0, 0.0, 30.0], orders, S, H)["setups"] == 2
+
+
+def test_silver_meal_worked_example():
+    orders = silver_meal(DEMANDS, S, H)
+    assert orders == [110.0, 0.0, 190.0, 0.0, 0.0, 100.0]
+    cost = evaluate_plan(DEMANDS, orders, S, H)
+    assert cost["holding_cost"] == pytest.approx(190.0)
+    assert cost["total_cost"] == pytest.approx(640.0)
+
+
+def test_wagner_whitin_worked_example_is_optimal():
+    orders = wagner_whitin(DEMANDS, S, H)
+    assert orders == [110.0, 0.0, 190.0, 0.0, 0.0, 100.0]
+    assert evaluate_plan(DEMANDS, orders, S, H)["total_cost"] == pytest.approx(640.0)
+
+
+def test_wagner_whitin_never_worse_than_silver_meal():
+    ww = evaluate_plan(DEMANDS, wagner_whitin(DEMANDS, S, H), S, H)
+    sm = evaluate_plan(DEMANDS, silver_meal(DEMANDS, S, H), S, H)
+    assert ww["total_cost"] <= sm["total_cost"]
+
+
+def test_evaluate_plan_tracks_ending_inventory():
+    cost = evaluate_plan(DEMANDS, [110.0, 0.0, 190.0, 0.0, 0.0, 100.0], S, H)
+    assert cost["ending_inventory"] == [60.0, 0.0, 100.0, 30.0, 0.0, 0.0]
+
+
+def test_evaluate_plan_rejects_shortages():
+    with pytest.raises(ValueError, match="[Ss]hortage"):
+        evaluate_plan([50.0, 60.0], [50.0, 0.0], S, H)
+
+
+@pytest.mark.parametrize(
+    "demands, setup, holding, message",
+    [
+        ([], S, H, "at least one"),
+        ([10.0, -5.0], S, H, "negative"),
+        ([10.0], 0.0, H, "positive"),
+        ([10.0], S, 0.0, "positive"),
+    ],
+)
+def test_invalid_inputs_rejected(demands, setup, holding, message):
+    with pytest.raises(ValueError, match=message):
+        validate_inputs(demands, setup, holding)
