@@ -45,7 +45,7 @@ export function precedenceTraces(
     },
     {
       type: "scatter",
-      mode: "markers+text",
+      mode: "text+markers",
       x: ids.map((id) => pos.get(id)!.x),
       y: ids.map((id) => pos.get(id)!.y),
       text: ids,
