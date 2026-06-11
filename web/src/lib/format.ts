@@ -6,3 +6,7 @@ export function formatMoney(value: number): string {
 export function percentGap(cost: number, best: number): string {
   return `+${Math.round((cost / best - 1) * 100)}%`;
 }
+
+export function formatNumber(value: number): string {
+  return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+}

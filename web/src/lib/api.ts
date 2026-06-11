@@ -52,3 +52,52 @@ export interface EoqResponse {
   total_cost: number;
   curve: { q: number[]; ordering: number[]; holding: number[]; total: number[] };
 }
+
+export interface ScheduledJob {
+  id: string;
+  start: number;
+  end: number;
+}
+
+export type DispatchMethodName =
+  | "fcfs"
+  | "spt"
+  | "edd"
+  | "lpt"
+  | "moore_hodgson"
+  | "min_total_tardiness";
+
+export interface DispatchMethodResult {
+  sequence: string[];
+  schedule: ScheduledJob[];
+  avg_completion_time: number;
+  avg_tardiness: number;
+  total_tardiness: number;
+  max_tardiness: number;
+  num_tardy: number;
+}
+
+export interface DispatchResponse {
+  // min_total_tardiness is omitted beyond 15 jobs, hence Partial
+  methods: Partial<Record<DispatchMethodName, DispatchMethodResult>>;
+  optimal_capped: boolean;
+}
+
+export interface JohnsonStep {
+  kind: "pick" | "done";
+  job?: string;
+  time?: number;
+  machine?: 1 | 2;
+  placement?: "front" | "back";
+  slot?: number;
+  sequence?: string[];
+}
+
+export interface JohnsonResponse {
+  sequence: string[];
+  machine1: ScheduledJob[];
+  machine2: ScheduledJob[];
+  makespan: number;
+  input_order_makespan: number;
+  steps: JohnsonStep[];
+}
