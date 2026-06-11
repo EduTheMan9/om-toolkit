@@ -163,6 +163,30 @@ CELLULAR_EXAMPLES = {
     },
 }
 
+PRODUCTIVITY_EXAMPLES = {
+    "Bakery, two weeks": {
+        "description": "Last week is the worked example from the test suite "
+        "(multifactor 5/3). This week output grew faster than input costs.",
+        "output_values": (5000.0, 6000.0),
+        "rows": [
+            {"Input": "Labor", "Last period ($)": 1500.0, "This period ($)": 1600.0},
+            {"Input": "Materials", "Last period ($)": 1000.0, "This period ($)": 1150.0},
+            {"Input": "Overhead", "Last period ($)": 500.0, "This period ($)": 500.0},
+        ],
+    },
+    "Automation trade-off": {
+        "description": "A robot replaced most of the labor: labor productivity "
+        "explodes, but MULTIFACTOR productivity falls - the machine costs more "
+        "than the labor it saved.",
+        "output_values": (8000.0, 8200.0),
+        "rows": [
+            {"Input": "Labor", "Last period ($)": 2000.0, "This period ($)": 800.0},
+            {"Input": "Machines", "Last period ($)": 500.0, "This period ($)": 2200.0},
+            {"Input": "Materials", "Last period ($)": 2000.0, "This period ($)": 2050.0},
+        ],
+    },
+}
+
 JOHNSON_EXAMPLES = {
     "Five jobs, two machines": {
         "description": "The worked example from the test suite (makespan 24).",

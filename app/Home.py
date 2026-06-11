@@ -13,6 +13,7 @@ st.page_link("pages/2_Process_Analysis.py", label="Process Analysis & Bottleneck
 st.page_link("pages/3_Scheduling.py", label="Scheduling", icon="📅")
 st.page_link("pages/4_Lot_Sizing.py", label="MRP & Lot Sizing", icon="📦")
 st.page_link("pages/5_Cellular.py", label="Cellular Manufacturing", icon="🔳")
+st.page_link("pages/6_Productivity.py", label="Productivity Metrics", icon="📈")
 
 st.subheader("Roadmap")
 st.markdown(
@@ -24,6 +25,6 @@ st.markdown(
 | Scheduling (Johnson's rule, dispatching rules, Gantt charts) | ✅ available |
 | MRP & lot-sizing (EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin) | ✅ available |
 | Cellular manufacturing (rank order clustering) | ✅ available |
-| Productivity metrics | planned |
+| Productivity metrics | ✅ available |
 """
 )
