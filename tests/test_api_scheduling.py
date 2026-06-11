@@ -53,3 +53,35 @@ def test_dispatch_rejects_duplicate_ids_with_core_message():
     response = client.post("/api/scheduling/dispatch", json=bad)
     assert response.status_code == 422
     assert "Duplicate" in response.json()["detail"]
+
+
+JOHNSON_REQUEST = {
+    "jobs": [
+        {"id": "J1", "time_m1": 3, "time_m2": 6},
+        {"id": "J2", "time_m1": 5, "time_m2": 2},
+        {"id": "J3", "time_m1": 1, "time_m2": 2},
+        {"id": "J4", "time_m1": 6, "time_m2": 6},
+        {"id": "J5", "time_m1": 7, "time_m2": 5},
+    ]
+}
+
+
+def test_johnson_endpoint_worked_example():
+    response = client.post("/api/scheduling/johnson", json=JOHNSON_REQUEST)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["sequence"] == ["J3", "J1", "J4", "J5", "J2"]
+    assert body["makespan"] == pytest.approx(24.0)
+    # baseline for the comparison card: run the jobs in the typed order
+    assert body["input_order_makespan"] == pytest.approx(27.0)
+    assert body["machine2"][0] == {"id": "J3", "start": 1.0, "end": 3.0}
+    # pick narration is included for the teaching drawer
+    assert body["steps"][0]["job"] == "J3"
+    assert body["steps"][-1]["kind"] == "done"
+
+
+def test_johnson_rejects_nonpositive_time_with_core_message():
+    bad = {"jobs": [{"id": "A", "time_m1": 0, "time_m2": 2}]}
+    response = client.post("/api/scheduling/johnson", json=bad)
+    assert response.status_code == 422
+    assert "positive" in response.json()["detail"]

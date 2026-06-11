@@ -6,8 +6,11 @@ from fastapi import APIRouter
 from core.scheduling import (
     MAX_OPTIMAL_JOBS,
     RULES,
+    FlowShopJob,
     Job,
     build_schedule,
+    flow_shop_schedule,
+    johnson_sequence_with_steps,
     min_total_tardiness,
     moore_hodgson,
     schedule_metrics,
@@ -70,3 +73,45 @@ def dispatch(req: DispatchRequest) -> DispatchResponse:
             **schedule_metrics(schedule, jobs),
         )
     return DispatchResponse(methods=methods, optimal_capped=capped)
+
+
+class FlowShopJobIn(BaseModel):
+    id: str
+    time_m1: float
+    time_m2: float
+
+
+class JohnsonRequest(BaseModel):
+    jobs: list[FlowShopJobIn]
+
+
+class JohnsonResponse(BaseModel):
+    sequence: list[str]
+    machine1: list[ScheduledJobOut]
+    machine2: list[ScheduledJobOut]
+    makespan: float
+    input_order_makespan: float
+    steps: list[dict]
+
+
+@router.post("/johnson", response_model=JohnsonResponse)
+def johnson(req: JohnsonRequest) -> JohnsonResponse:
+    jobs = [FlowShopJob(j.id, j.time_m1, j.time_m2) for j in req.jobs]
+    sequence, steps = johnson_sequence_with_steps(jobs)  # validates first
+    schedule = flow_shop_schedule(sequence)
+    # the "do nothing" baseline: run the jobs in the order they were typed
+    input_order_makespan = flow_shop_schedule(jobs).makespan
+    return JohnsonResponse(
+        sequence=[j.id for j in sequence],
+        machine1=[
+            ScheduledJobOut(id=s.id, start=s.start, end=s.end)
+            for s in schedule.machine1
+        ],
+        machine2=[
+            ScheduledJobOut(id=s.id, start=s.start, end=s.end)
+            for s in schedule.machine2
+        ],
+        makespan=schedule.makespan,
+        input_order_makespan=input_order_makespan,
+        steps=steps,
+    )
