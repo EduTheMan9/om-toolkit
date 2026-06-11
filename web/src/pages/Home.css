@@ -1,0 +1,27 @@
+.home { padding: 48px 56px; max-width: 1000px; }
+.home h1 { font-size: 30px; font-weight: 700; }
+.home .tagline { margin: 8px 0 32px; }
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.module-card { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+.module-card h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.module-card .decision { color: var(--subtle); font-size: 13px; flex: 1; }
+.module-card .actions { display: flex; gap: 10px; align-items: center; }
+
+.module-card a.open {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.module-card a.example { color: var(--accent); font-size: 12px; text-decoration: none; }
+.module-card .soon { color: var(--muted); font-size: 12px; }

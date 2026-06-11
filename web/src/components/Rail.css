@@ -1,0 +1,27 @@
+.rail {
+  width: 60px;
+  min-height: 100vh;
+  background: var(--rail-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rail-logo { color: var(--accent-bright); margin-bottom: 14px; display: flex; }
+
+.rail-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.rail-item:hover { color: #fff; background: #1f2937; }
+.rail-item.active { background: var(--accent); color: #fff; }
