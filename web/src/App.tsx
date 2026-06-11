@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { Rail } from "./components/Rail";
 import ComingSoon from "./pages/ComingSoon";
 import Home from "./pages/Home";
+import LineBalancingPage from "./pages/line-balancing/LineBalancingPage";
 import LotSizingPage from "./pages/lot-sizing/LotSizingPage";
 import SchedulingPage from "./pages/scheduling/SchedulingPage";
 import { MODULES } from "./modules";
@@ -13,6 +14,7 @@ export default function App() {
       <main style={{ flex: 1, minWidth: 0 }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/line-balancing" element={<LineBalancingPage />} />
           <Route path="/lot-sizing" element={<LotSizingPage />} />
           <Route path="/scheduling" element={<SchedulingPage />} />
           {MODULES.filter((m) => !m.ready).map((m) => (
