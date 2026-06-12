@@ -178,6 +178,31 @@ export interface ProcessResponse {
 
 export type LittlesVariable = "inventory" | "flow_rate" | "flow_time";
 
+export interface ProductivityFactor {
+  name: string;
+  previous: number | null;
+  current: number | null;
+  change: number | null;
+}
+
+export interface ProductivityStep {
+  kind: "totals" | "change" | "factor";
+  period?: "previous" | "current";
+  output?: number;
+  total?: number;
+  mfp?: number;
+  previous?: number | null;
+  current?: number | null;
+  change?: number | null;
+  name?: string;
+}
+
+export interface ProductivityResponse {
+  multifactor: { previous: number; current: number; change: number };
+  factors: ProductivityFactor[];
+  steps: ProductivityStep[];
+}
+
 export interface CellularStep {
   kind: "rows" | "cols" | "converged" | "cells" | "efficacy";
   iteration?: number;

@@ -6,12 +6,14 @@ import {
   decodeDynamic,
   decodeJohnson,
   decodeProcess,
+  decodeProductivity,
   encodeBalancing,
   encodeCellular,
   encodeDispatch,
   encodeDynamic,
   encodeJohnson,
   encodeProcess,
+  encodeProductivity,
 } from "./urlState";
 
 describe("dynamic lot-sizing URL state", () => {
@@ -103,6 +105,26 @@ describe("process analysis URL state", () => {
     expect(decodeProcess("")).toBeNull();
     expect(decodeProcess("?r=A,x,1")).toBeNull();
     expect(decodeProcess("?r=A,10,2&d=abc")).toBeNull();
+  });
+});
+
+describe("productivity URL state", () => {
+  it("round-trips outputs and input costs", () => {
+    const inputs = {
+      outputPrevious: 5000,
+      outputCurrent: 6000,
+      inputs: [
+        { name: "Labor", previous: 1500, current: 1600 },
+        { name: "Overhead", previous: 500, current: 500 },
+      ],
+    };
+    expect(decodeProductivity("?" + encodeProductivity(inputs))).toEqual(inputs);
+  });
+
+  it("returns null for malformed strings", () => {
+    expect(decodeProductivity("")).toBeNull();
+    expect(decodeProductivity("?i=Labor,x,1&o=5,6")).toBeNull();
+    expect(decodeProductivity("?i=Labor,1,2&o=5")).toBeNull();
   });
 });
 

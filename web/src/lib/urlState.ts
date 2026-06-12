@@ -173,6 +173,50 @@ export function encodeProcess(inputs: ProcessInputs): string {
   return params.toString();
 }
 
+export interface ProductivityInputRow {
+  name: string;
+  previous: number;
+  current: number;
+}
+
+export interface ProductivityInputs {
+  outputPrevious: number;
+  outputCurrent: number;
+  inputs: ProductivityInputRow[];
+}
+
+// Inputs encode as i=name,prev,cur;... plus o=<prev>,<cur> output values.
+// Names containing "," or ";" break the format; decode returns null and the
+// page falls back to a preset.
+export function encodeProductivity(inputs: ProductivityInputs): string {
+  const params = new URLSearchParams();
+  params.set("o", `${inputs.outputPrevious},${inputs.outputCurrent}`);
+  params.set(
+    "i",
+    inputs.inputs.map((x) => [x.name, x.previous, x.current].join(",")).join(";"),
+  );
+  return params.toString();
+}
+
+export function decodeProductivity(search: string): ProductivityInputs | null {
+  const params = new URLSearchParams(search);
+  const o = params.get("o");
+  const raw = params.get("i");
+  if (!o || !raw) return null;
+  const outputs = o.split(",").map(Number);
+  if (outputs.length !== 2 || outputs.some(Number.isNaN)) return null;
+  const inputs: ProductivityInputRow[] = [];
+  for (const part of raw.split(";")) {
+    const fields = part.split(",");
+    if (fields.length !== 3 || !fields[0]) return null;
+    const previous = Number(fields[1]);
+    const current = Number(fields[2]);
+    if (Number.isNaN(previous) || Number.isNaN(current)) return null;
+    inputs.push({ name: fields[0], previous, current });
+  }
+  return { outputPrevious: outputs[0], outputCurrent: outputs[1], inputs };
+}
+
 // The incidence matrix encodes as one binary word per machine: m=10010;01101;…
 // (machines and parts are auto-named M1../P1.., so only the bits travel).
 export function encodeCellular(matrix: number[][]): string {
