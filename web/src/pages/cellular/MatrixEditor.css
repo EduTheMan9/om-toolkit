@@ -1,0 +1,33 @@
+.matrix-editor { border-collapse: collapse; }
+.matrix-editor th {
+  font-size: 10px;
+  color: var(--subtle);
+  font-weight: 600;
+  padding: 2px 3px;
+  text-align: center;
+}
+.matrix-editor td { padding: 2px; }
+.matrix-editor td button {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: transparent;
+  font-size: 11px;
+  font-weight: 700;
+}
+.matrix-editor td button.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.matrix-editor-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.matrix-editor-actions button {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--subtle);
+}
