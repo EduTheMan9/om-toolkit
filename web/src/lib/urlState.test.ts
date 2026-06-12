@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   decodeBalancing,
+  decodeCellular,
   decodeDispatch,
   decodeDynamic,
   decodeJohnson,
   decodeProcess,
   encodeBalancing,
+  encodeCellular,
   encodeDispatch,
   encodeDynamic,
   encodeJohnson,
@@ -101,5 +103,23 @@ describe("process analysis URL state", () => {
     expect(decodeProcess("")).toBeNull();
     expect(decodeProcess("?r=A,x,1")).toBeNull();
     expect(decodeProcess("?r=A,10,2&d=abc")).toBeNull();
+  });
+});
+
+describe("cellular URL state", () => {
+  it("round-trips the worked example matrix", () => {
+    const matrix = [
+      [1, 0, 0, 1, 0],
+      [0, 1, 1, 0, 1],
+      [1, 0, 0, 1, 0],
+      [0, 1, 1, 0, 0],
+    ];
+    expect(decodeCellular("?" + encodeCellular(matrix))).toEqual(matrix);
+  });
+
+  it("returns null for malformed or ragged matrices", () => {
+    expect(decodeCellular("")).toBeNull();
+    expect(decodeCellular("?m=10a10")).toBeNull();
+    expect(decodeCellular("?m=10;1")).toBeNull();
   });
 });

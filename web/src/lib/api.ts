@@ -178,6 +178,37 @@ export interface ProcessResponse {
 
 export type LittlesVariable = "inventory" | "flow_rate" | "flow_time";
 
+export interface CellularStep {
+  kind: "rows" | "cols" | "converged" | "cells" | "efficacy";
+  iteration?: number;
+  values?: number[];
+  order?: number[];
+  changed?: boolean;
+  iterations?: number;
+  machine_cells?: number[];
+  part_cells?: number[];
+  n_cells?: number;
+  total_ones?: number;
+  exceptional?: number;
+  voids?: number;
+  grouping_efficacy?: number;
+}
+
+export interface CellularResponse {
+  matrix: number[][]; // echoed input; all orders index into this
+  row_order: number[];
+  col_order: number[];
+  iterations: number;
+  machine_cells: number[];
+  part_cells: number[];
+  n_cells: number;
+  total_ones: number;
+  exceptional: number;
+  voids: number;
+  grouping_efficacy: number;
+  steps: CellularStep[];
+}
+
 export interface LittlesLawResponse {
   solved_for: LittlesVariable;
   inventory: number;

@@ -173,6 +173,28 @@ export function encodeProcess(inputs: ProcessInputs): string {
   return params.toString();
 }
 
+// The incidence matrix encodes as one binary word per machine: m=10010;01101;…
+// (machines and parts are auto-named M1../P1.., so only the bits travel).
+export function encodeCellular(matrix: number[][]): string {
+  const params = new URLSearchParams();
+  params.set("m", matrix.map((row) => row.join("")).join(";"));
+  return params.toString();
+}
+
+export function decodeCellular(search: string): number[][] | null {
+  const raw = new URLSearchParams(search).get("m");
+  if (!raw) return null;
+  const matrix: number[][] = [];
+  let width = -1;
+  for (const word of raw.split(";")) {
+    if (!/^[01]+$/.test(word)) return null;
+    if (width === -1) width = word.length;
+    if (word.length !== width) return null;
+    matrix.push([...word].map(Number));
+  }
+  return matrix;
+}
+
 export function decodeProcess(search: string): ProcessInputs | null {
   const params = new URLSearchParams(search);
   const raw = params.get("r");
