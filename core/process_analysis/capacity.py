@@ -48,3 +48,43 @@ def unloaded_flow_time(resources: list[Resource]) -> float:
     """Time one unit spends in an empty process (no queueing): the sum of
     processing times along the line."""
     return sum(r.processing_time for r in resources)
+
+
+def capacity_steps(resources: list[Resource], demand: float | None = None) -> list[dict]:
+    """Narrate the capacity analysis as structured steps for the UI player,
+    in the order you'd compute it by hand: each resource's capacity, the
+    minimum (bottleneck), the flow-rate decision, then utilizations."""
+    validate_resources(resources)
+    steps: list[dict] = [
+        {
+            "kind": "capacity",
+            "resource": r.name,
+            "processing_time": r.processing_time,
+            "servers": r.servers,
+            "capacity": r.capacity,
+        }
+        for r in resources
+    ]
+    bn = bottleneck(resources)
+    steps.append({"kind": "bottleneck", "resource": bn.name, "capacity": bn.capacity})
+    rate = flow_rate(resources, demand)
+    constrained_by_demand = demand is not None and demand < bn.capacity
+    steps.append(
+        {
+            "kind": "flow_rate",
+            "capacity": bn.capacity,
+            "demand": demand,
+            "rate": rate,
+            "constraint": "demand" if constrained_by_demand else "capacity",
+        }
+    )
+    for r in resources:
+        steps.append(
+            {
+                "kind": "utilization",
+                "resource": r.name,
+                "utilization": utilization(r, rate),
+                "implied": None if demand is None else implied_utilization(r, demand),
+            }
+        )
+    return steps

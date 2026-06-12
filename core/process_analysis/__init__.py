@@ -1,6 +1,7 @@
 """Public API of the process analysis core (UI imports only from here)."""
 from .capacity import (
     bottleneck,
+    capacity_steps,
     flow_rate,
     implied_utilization,
     process_capacity,
@@ -14,6 +15,7 @@ from .models import Resource
 __all__ = [
     "Resource",
     "bottleneck",
+    "capacity_steps",
     "flow_rate",
     "implied_utilization",
     "process_capacity",

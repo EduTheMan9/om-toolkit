@@ -14,6 +14,7 @@ import pytest
 
 from core.process_analysis.capacity import (
     bottleneck,
+    capacity_steps,
     flow_rate,
     implied_utilization,
     process_capacity,
@@ -70,6 +71,43 @@ def test_implied_utilization_can_exceed_one():
 
 def test_unloaded_flow_time_sums_processing_times():
     assert unloaded_flow_time(RESOURCES) == pytest.approx(20.0)
+
+
+def test_capacity_steps_narrate_the_worked_example():
+    """The docstring trace above as recorded steps: capacities in process
+    order, then the bottleneck, the flow-rate decision, and utilizations."""
+    steps = capacity_steps(RESOURCES, demand=0.15)
+    assert [s["kind"] for s in steps] == [
+        "capacity", "capacity", "capacity", "bottleneck", "flow_rate",
+        "utilization", "utilization", "utilization",
+    ]
+    assert steps[0] == {
+        "kind": "capacity", "resource": "A", "processing_time": 10.0,
+        "servers": 2, "capacity": pytest.approx(0.2),
+    }
+    assert steps[3] == {
+        "kind": "bottleneck", "resource": "B", "capacity": pytest.approx(1 / 6),
+    }
+    flow = steps[4]
+    assert flow["demand"] == pytest.approx(0.15)
+    assert flow["rate"] == pytest.approx(0.15)
+    assert flow["constraint"] == "demand"
+    util_b = steps[6]
+    assert util_b["resource"] == "B"
+    assert util_b["utilization"] == pytest.approx(0.90)
+    assert util_b["implied"] == pytest.approx(0.90)  # rate = demand here
+
+
+def test_capacity_steps_without_demand_are_capacity_constrained():
+    steps = capacity_steps(RESOURCES)
+    flow = next(s for s in steps if s["kind"] == "flow_rate")
+    assert flow["demand"] is None
+    assert flow["constraint"] == "capacity"
+    assert flow["rate"] == pytest.approx(1 / 6)
+    utils = [s for s in steps if s["kind"] == "utilization"]
+    assert utils[0]["implied"] is None
+    # flow rate = bottleneck capacity -> the bottleneck runs flat out
+    assert utils[1]["utilization"] == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize(
