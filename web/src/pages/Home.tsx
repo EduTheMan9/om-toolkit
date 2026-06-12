@@ -30,7 +30,7 @@ export default function Home() {
                   )}
                 </>
               ) : (
-                <span className="soon">Coming soon — available in the classic app</span>
+                <span className="soon">Coming soon</span>
               )}
             </div>
           </div>

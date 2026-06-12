@@ -60,18 +60,9 @@ multifactor productivity — the honest aggregate — moves the other way.
 
 ## Run locally
 
-**Classic app (Streamlit, all six modules):**
-
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # Windows (use source .venv/bin/activate elsewhere)
-pip install -r requirements.txt
-streamlit run app/Home.py
-```
-
-**New app (React + FastAPI — being rolled out module by module):**
-
-```bash
 pip install -r requirements.txt
 cd web && npm install && npm run build && cd ..
 uvicorn api.main:app --port 8000     # serves API + UI at http://localhost:8000
@@ -97,13 +88,12 @@ cd web && npm run e2e   # browser smoke tests (Playwright)
 core/   pure algorithm logic (importable, testable, UI-free)
 api/    FastAPI JSON layer over core/, serves the built frontend
 web/    React + TypeScript + Vite frontend (Clean Lab design system)
-app/    legacy Streamlit UI (kept until the React app reaches parity)
 tests/  pytest suite with hand-traced validation examples
 docs/   design specs and implementation plans
 ```
 
 ## Roadmap
 
-- All six modules are built in the classic app ✅
-- React redesign: Lot Sizing ✅, Scheduling ✅, Line Balancing ✅, Process Analysis ✅, Cellular ✅ — Productivity is the last module to go
+- All six modules live in the React + FastAPI app ✅ (the original Streamlit
+  prototype served all six first and has been retired)
 - Deploy the FastAPI + React app

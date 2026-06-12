@@ -6,7 +6,7 @@ export interface ModuleDef {
   name: string;
   decision: string; // the question this module answers, in plain language
   icon: LucideIcon;
-  ready: boolean; // false = still only in the legacy Streamlit app
+  ready: boolean; // false = planned but not built yet (hides the page links)
   exampleSearch?: string; // query string that loads a preset
 }
 
