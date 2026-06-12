@@ -143,3 +143,44 @@ export interface BalancingResponse {
   heuristics: Record<HeuristicName, HeuristicResult>;
   steps: RpwStep[];
 }
+
+export interface ProcessResource {
+  name: string;
+  processing_time: number;
+  servers: number;
+  capacity: number;
+  utilization: number;
+  implied_utilization: number | null;
+}
+
+export interface ProcessStep {
+  kind: "capacity" | "bottleneck" | "flow_rate" | "utilization";
+  resource?: string;
+  processing_time?: number;
+  servers?: number;
+  capacity?: number;
+  demand?: number | null;
+  rate?: number;
+  constraint?: "demand" | "capacity";
+  utilization?: number;
+  implied?: number | null;
+}
+
+export interface ProcessResponse {
+  bottleneck: string;
+  process_capacity: number;
+  flow_rate: number;
+  constraint: "demand" | "capacity";
+  unloaded_flow_time: number;
+  resources: ProcessResource[];
+  steps: ProcessStep[];
+}
+
+export type LittlesVariable = "inventory" | "flow_rate" | "flow_time";
+
+export interface LittlesLawResponse {
+  solved_for: LittlesVariable;
+  inventory: number;
+  flow_rate: number;
+  flow_time: number;
+}

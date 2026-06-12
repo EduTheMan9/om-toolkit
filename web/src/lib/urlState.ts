@@ -146,3 +146,49 @@ export function decodeBalancing(search: string): BalancingInputs | null {
   if (Number.isNaN(availableTime) || Number.isNaN(demand)) return null;
   return { tasks, cycleTime: null, availableTime, demand };
 }
+
+export interface ProcessResourceInput {
+  name: string;
+  timeMin: number; // minutes per unit (the UI's display unit convention)
+  servers: number;
+}
+
+export interface ProcessInputs {
+  resources: ProcessResourceInput[];
+  demandPerHour: number | null; // null = capacity-only analysis
+}
+
+// Resources encode as r=name,minutes,servers;... plus optional d=<units/hour>.
+// Names containing "," or ";" break the format; decode returns null and the
+// page falls back to a preset.
+export function encodeProcess(inputs: ProcessInputs): string {
+  const params = new URLSearchParams();
+  params.set(
+    "r",
+    inputs.resources
+      .map((x) => [x.name, x.timeMin, x.servers].join(","))
+      .join(";"),
+  );
+  if (inputs.demandPerHour !== null) params.set("d", String(inputs.demandPerHour));
+  return params.toString();
+}
+
+export function decodeProcess(search: string): ProcessInputs | null {
+  const params = new URLSearchParams(search);
+  const raw = params.get("r");
+  if (!raw) return null;
+  const resources: ProcessResourceInput[] = [];
+  for (const part of raw.split(";")) {
+    const fields = part.split(",");
+    if (fields.length !== 3 || !fields[0]) return null;
+    const timeMin = Number(fields[1]);
+    const servers = Number(fields[2]);
+    if (Number.isNaN(timeMin) || Number.isNaN(servers)) return null;
+    resources.push({ name: fields[0], timeMin, servers });
+  }
+  const d = params.get("d");
+  if (d === null) return { resources, demandPerHour: null };
+  const demandPerHour = Number(d);
+  if (Number.isNaN(demandPerHour)) return null;
+  return { resources, demandPerHour };
+}

@@ -12,11 +12,13 @@ export interface JobRow {
  * need an ID, so paste can't invent them). */
 export function JobsTable({
   label,
+  idLabel = "job",
   columns,
   rows,
   onChange,
 }: {
   label: string;
+  idLabel?: string;
   columns: [string, string];
   rows: JobRow[];
   onChange: (next: JobRow[]) => void;
@@ -43,9 +45,10 @@ export function JobsTable({
   };
 
   const addRow = () => {
+    const prefix = idLabel.charAt(0).toUpperCase();
     let n = rows.length + 1;
-    while (rows.some((r) => r.id === `J${n}`)) n += 1;
-    onChange([...rows, { id: `J${n}`, a: 1, b: 1 }]);
+    while (rows.some((r) => r.id === `${prefix}${n}`)) n += 1;
+    onChange([...rows, { id: `${prefix}${n}`, a: 1, b: 1 }]);
   };
 
   return (
@@ -54,7 +57,7 @@ export function JobsTable({
       <table className="demand-table">
         <thead>
           <tr>
-            <th>job</th>
+            <th>{idLabel}</th>
             <th>{columns[0]}</th>
             <th>{columns[1]}</th>
           </tr>
@@ -85,9 +88,9 @@ export function JobsTable({
         </tbody>
       </table>
       <div className="demand-table-actions">
-        <button onClick={addRow}>+ job</button>
+        <button onClick={addRow}>+ {idLabel}</button>
         <button onClick={() => rows.length > 1 && onChange(rows.slice(0, -1))}>
-          − job
+          − {idLabel}
         </button>
       </div>
       <div className="demand-table-hint">tip: paste a column straight from Excel</div>

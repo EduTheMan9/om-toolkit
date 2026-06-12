@@ -4,10 +4,12 @@ import {
   decodeDispatch,
   decodeDynamic,
   decodeJohnson,
+  decodeProcess,
   encodeBalancing,
   encodeDispatch,
   encodeDynamic,
   encodeJohnson,
+  encodeProcess,
 } from "./urlState";
 
 describe("dynamic lot-sizing URL state", () => {
@@ -72,5 +74,32 @@ describe("line balancing URL state", () => {
     expect(decodeBalancing("?t=A,5,&ct=abc")).toBeNull();
     expect(decodeBalancing("?t=A,x,&ct=10")).toBeNull();
     expect(decodeBalancing("?t=A,5,")).toBeNull(); // no ct and no at+dm
+  });
+});
+
+describe("process analysis URL state", () => {
+  it("round-trips resources and a known demand", () => {
+    const inputs = {
+      resources: [
+        { name: "Take order", timeMin: 1.5, servers: 1 },
+        { name: "Make sandwich", timeMin: 3, servers: 2 },
+      ],
+      demandPerHour: 35,
+    };
+    expect(decodeProcess("?" + encodeProcess(inputs))).toEqual(inputs);
+  });
+
+  it("round-trips capacity-only inputs (no demand)", () => {
+    const inputs = {
+      resources: [{ name: "A", timeMin: 10, servers: 2 }],
+      demandPerHour: null,
+    };
+    expect(decodeProcess("?" + encodeProcess(inputs))).toEqual(inputs);
+  });
+
+  it("returns null for malformed resource strings", () => {
+    expect(decodeProcess("")).toBeNull();
+    expect(decodeProcess("?r=A,x,1")).toBeNull();
+    expect(decodeProcess("?r=A,10,2&d=abc")).toBeNull();
   });
 });
