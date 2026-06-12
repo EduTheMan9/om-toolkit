@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Rail } from "./components/Rail";
+import CellularPage from "./pages/cellular/CellularPage";
 import ComingSoon from "./pages/ComingSoon";
 import Home from "./pages/Home";
 import LineBalancingPage from "./pages/line-balancing/LineBalancingPage";
@@ -15,6 +16,7 @@ export default function App() {
       <main style={{ flex: 1, minWidth: 0 }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/cellular" element={<CellularPage />} />
           <Route path="/line-balancing" element={<LineBalancingPage />} />
           <Route path="/lot-sizing" element={<LotSizingPage />} />
           <Route path="/process-analysis" element={<ProcessAnalysisPage />} />
