@@ -16,5 +16,5 @@ export const MODULES: ModuleDef[] = [
   { path: "/scheduling", name: "Scheduling", decision: "What order should I run these jobs in?", icon: Calendar, ready: true, exampleSearch: "?j=A,6,8;B,2,6;C,8,18;D,3,15;E,9,23" },
   { path: "/lot-sizing", name: "Lot Sizing", decision: "How much should I order, and when?", icon: Package, ready: true, exampleSearch: "?d=50,60,90,70,30,100&s=150&h=1" },
   { path: "/cellular", name: "Cellular", decision: "Which machines belong together in cells?", icon: Grid3X3, ready: true, exampleSearch: "?m=10010;01101;10010;01100" },
-  { path: "/productivity", name: "Productivity", decision: "Did we actually get more productive?", icon: TrendingUp, ready: false },
+  { path: "/productivity", name: "Productivity", decision: "Did we actually get more productive?", icon: TrendingUp, ready: true, exampleSearch: "?o=5000,6000&i=Labor,1500,1600;Materials,1000,1150;Overhead,500,500" },
 ];
