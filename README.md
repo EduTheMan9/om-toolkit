@@ -105,5 +105,5 @@ docs/   design specs and implementation plans
 ## Roadmap
 
 - All six modules are built in the classic app ✅
-- React redesign: Lot Sizing ✅, Scheduling ✅, Line Balancing ✅, Process Analysis ✅ — remaining modules rolling out one by one
+- React redesign: Lot Sizing ✅, Scheduling ✅, Line Balancing ✅, Process Analysis ✅, Cellular ✅ — Productivity is the last module to go
 - Deploy the FastAPI + React app
