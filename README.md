@@ -92,8 +92,15 @@ tests/  pytest suite with hand-traced validation examples
 docs/   design specs and implementation plans
 ```
 
+## Deployment
+
+The repo ships a multi-stage `Dockerfile` (Node builds `web/`, FastAPI
+serves the API plus the built frontend) and a `render.yaml` blueprint —
+connecting the repo on [Render](https://render.com) deploys it, and every
+push to `master` redeploys automatically.
+
 ## Roadmap
 
 - All six modules live in the React + FastAPI app ✅ (the original Streamlit
   prototype served all six first and has been retired)
-- Deploy the FastAPI + React app
+- Deployed on Render via the `render.yaml` blueprint ✅

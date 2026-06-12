@@ -1,0 +1,9 @@
+# Render blueprint: connect this repo at https://dashboard.render.com
+# (New + -> Blueprint) and it creates the service from this file.
+services:
+  - type: web
+    name: om-toolkit
+    runtime: docker
+    plan: free # sleeps when idle; first request after that takes ~30s
+    healthCheckPath: /api/health
+    autoDeploy: true # every push to master redeploys

@@ -1,0 +1,14 @@
+.git
+.venv
+.pytest_cache
+.playwright-mcp
+.claude
+.superpowers
+__pycache__
+**/__pycache__
+docs
+tests
+web/node_modules
+web/dist
+web/playwright-report
+web/test-results
