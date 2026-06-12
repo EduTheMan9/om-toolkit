@@ -9,13 +9,21 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 
-from api.routers import cellular, line_balancing, lot_sizing, process_analysis, scheduling
+from api.routers import (
+    cellular,
+    line_balancing,
+    lot_sizing,
+    process_analysis,
+    productivity,
+    scheduling,
+)
 
 app = FastAPI(title="OM Toolkit API")
 app.include_router(cellular.router)
 app.include_router(line_balancing.router)
 app.include_router(lot_sizing.router)
 app.include_router(process_analysis.router)
+app.include_router(productivity.router)
 app.include_router(scheduling.router)
 
 
