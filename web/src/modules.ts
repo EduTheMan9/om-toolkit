@@ -12,7 +12,7 @@ export interface ModuleDef {
 
 export const MODULES: ModuleDef[] = [
   { path: "/line-balancing", name: "Line Balancing", decision: "How do I split assembly work into balanced stations?", icon: Scale, ready: true, exampleSearch: "?t=A,5,;B,3,A;C,4,A;D,2,B;E,6,C;F,4,D.E&ct=10" },
-  { path: "/process-analysis", name: "Process Analysis", decision: "Where is my bottleneck, and what is it costing me?", icon: Search, ready: false },
+  { path: "/process-analysis", name: "Process Analysis", decision: "Where is my bottleneck, and what is it costing me?", icon: Search, ready: true, exampleSearch: "?r=A,10,2;B,6,1;C,4,1&d=9" },
   { path: "/scheduling", name: "Scheduling", decision: "What order should I run these jobs in?", icon: Calendar, ready: true, exampleSearch: "?j=A,6,8;B,2,6;C,8,18;D,3,15;E,9,23" },
   { path: "/lot-sizing", name: "Lot Sizing", decision: "How much should I order, and when?", icon: Package, ready: true, exampleSearch: "?d=50,60,90,70,30,100&s=150&h=1" },
   { path: "/cellular", name: "Cellular", decision: "Which machines belong together in cells?", icon: Grid3X3, ready: false },
