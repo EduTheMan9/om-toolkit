@@ -6,7 +6,7 @@ in the ROC order, where related machines already sit together), every
 possible split is tried, and the one with the highest grouping efficacy
 wins: mu = (e - exceptional) / (e + voids), which is 1 for perfect blocks.
 """
-from .roc import validate_matrix
+from .roc import rank_order_clustering, validate_matrix
 
 # 2^(m-1) consecutive partitions are enumerated; like the scheduling
 # module's exact optimizer, cap the exponent at course-problem sizes.
@@ -85,3 +85,31 @@ def find_best_cells(
 
     assert best is not None  # mask 0 always evaluated
     return best
+
+
+def solve_cells(matrix: list[list[int]]) -> dict:
+    """One-shot solve for the API: ROC ordering, the best consecutive cell
+    partition, its quality metrics, and the narration steps for the UI."""
+    steps: list[dict] = []
+    roc = rank_order_clustering(matrix, steps)
+    steps.append({"kind": "converged", "iterations": roc.iterations})
+    machine_cells, part_cells = find_best_cells(matrix, roc.row_order)
+    n_cells = max(machine_cells) + 1
+    steps.append({
+        "kind": "cells",
+        "machine_cells": machine_cells,
+        "part_cells": part_cells,
+        "n_cells": n_cells,
+    })
+    metrics = evaluate_cells(matrix, machine_cells, part_cells)
+    steps.append({"kind": "efficacy", **metrics})
+    return {
+        "row_order": roc.row_order,
+        "col_order": roc.col_order,
+        "iterations": roc.iterations,
+        "machine_cells": machine_cells,
+        "part_cells": part_cells,
+        "n_cells": n_cells,
+        **metrics,
+        "steps": steps,
+    }

@@ -32,20 +32,29 @@ class RocResult:
     iterations: int        # passes until a full pass changed nothing
 
 
-def _sorted_by_binary_value(vectors: list[list[int]], current: list[int]) -> list[int]:
-    """Reorder `current` indices by decreasing binary value of their vectors.
-    The sort is stable, so ties keep their current relative order (the ROC
-    analogue of the course's lower-ID tie-break)."""
-    def value(index: int) -> int:
+def _binary_values(vectors: list[list[int]]) -> list[int]:
+    """Each vector read as a binary number, first element = most significant."""
+    values = []
+    for vector in vectors:
         bits = 0
-        for bit in vectors[index]:
+        for bit in vector:
             bits = bits * 2 + bit
-        return bits
+        values.append(bits)
+    return values
 
-    return sorted(current, key=value, reverse=True)
+
+def _sorted_by_value(values: list[int], current: list[int]) -> list[int]:
+    """Reorder `current` indices by decreasing value. The sort is stable, so
+    ties keep their current relative order (the ROC analogue of the course's
+    lower-ID tie-break)."""
+    return sorted(current, key=lambda index: values[index], reverse=True)
 
 
-def rank_order_clustering(matrix: list[list[int]]) -> RocResult:
+def rank_order_clustering(
+    matrix: list[list[int]], steps: list[dict] | None = None
+) -> RocResult:
+    """If `steps` is given, every row/column pass is appended to it as a
+    structured step for the UI player (values indexed by ORIGINAL position)."""
     validate_matrix(matrix)
     n_rows, n_cols = len(matrix), len(matrix[0])
     row_order = list(range(n_rows))
@@ -56,10 +65,22 @@ def rank_order_clustering(matrix: list[list[int]]) -> RocResult:
         iterations += 1
         # Row pass: each row read left-to-right in the CURRENT column order.
         rows = [[matrix[i][j] for j in col_order] for i in range(n_rows)]
-        new_rows = _sorted_by_binary_value(rows, row_order)
+        row_values = _binary_values(rows)
+        new_rows = _sorted_by_value(row_values, row_order)
         # Column pass: each column read top-to-bottom in the NEW row order.
         cols = [[matrix[i][j] for i in new_rows] for j in range(n_cols)]
-        new_cols = _sorted_by_binary_value(cols, col_order)
+        col_values = _binary_values(cols)
+        new_cols = _sorted_by_value(col_values, col_order)
+
+        if steps is not None:
+            steps.append({
+                "kind": "rows", "iteration": iterations, "values": row_values,
+                "order": new_rows, "changed": new_rows != row_order,
+            })
+            steps.append({
+                "kind": "cols", "iteration": iterations, "values": col_values,
+                "order": new_cols, "changed": new_cols != col_order,
+            })
 
         if new_rows == row_order and new_cols == col_order:
             return RocResult(row_order, col_order, iterations)

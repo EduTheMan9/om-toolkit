@@ -9,7 +9,12 @@ P4 ties 1-1 between the cells and goes to the earlier one.
 """
 import pytest
 
-from core.cellular.cells import MAX_PARTITION_MACHINES, evaluate_cells, find_best_cells
+from core.cellular.cells import (
+    MAX_PARTITION_MACHINES,
+    evaluate_cells,
+    find_best_cells,
+    solve_cells,
+)
 from core.cellular.roc import rank_order_clustering
 
 MATRIX_A = [
@@ -76,3 +81,47 @@ def test_find_best_cells_rejects_oversized_instances():
     matrix = [[1 if i == j else 0 for j in range(n)] for i in range(n)]
     with pytest.raises(ValueError, match="machines"):
         find_best_cells(matrix, list(range(n)))
+
+
+def test_solve_cells_worked_example_a():
+    """One-shot solve = ROC orders + best cells + metrics + narration steps.
+    Step values are the hand trace: pass-1 row values 18,13,18,12 etc."""
+    result = solve_cells(MATRIX_A)
+    assert result["row_order"] == [0, 2, 1, 3]
+    assert result["col_order"] == [0, 3, 1, 2, 4]
+    assert result["iterations"] == 2
+    assert result["machine_cells"] == [0, 1, 0, 1]
+    assert result["part_cells"] == [0, 1, 1, 0, 1]
+    assert result["n_cells"] == 2
+    assert result["grouping_efficacy"] == pytest.approx(0.9)
+    assert [s["kind"] for s in result["steps"]] == [
+        "rows", "cols", "rows", "cols", "converged", "cells", "efficacy",
+    ]
+    assert result["steps"][0] == {
+        "kind": "rows", "iteration": 1, "values": [18, 13, 18, 12],
+        "order": [0, 2, 1, 3], "changed": True,
+    }
+    assert result["steps"][1] == {
+        "kind": "cols", "iteration": 1, "values": [12, 3, 3, 12, 2],
+        "order": [0, 3, 1, 2, 4], "changed": True,
+    }
+
+
+def test_solve_cells_final_pass_reports_no_change():
+    steps = solve_cells(MATRIX_A)["steps"]
+    # pass 2 re-sorts and finds the same orders -> changed False, then stop
+    assert steps[2]["changed"] is False
+    assert steps[3]["changed"] is False
+    assert steps[4] == {"kind": "converged", "iterations": 2}
+    assert steps[5] == {
+        "kind": "cells", "machine_cells": [0, 1, 0, 1],
+        "part_cells": [0, 1, 1, 0, 1], "n_cells": 2,
+    }
+
+
+def test_solve_cells_example_b_counts_exceptional_and_voids():
+    result = solve_cells(MATRIX_B)
+    assert result["total_ones"] == 8
+    assert result["exceptional"] == 1
+    assert result["voids"] == 1
+    assert result["grouping_efficacy"] == pytest.approx(7 / 9)
