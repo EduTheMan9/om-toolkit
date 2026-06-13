@@ -1,5 +1,7 @@
 # 🏭 OM Toolkit
 
+[![CI](https://github.com/EduTheMan9/om-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/EduTheMan9/om-toolkit/actions/workflows/ci.yml)
+
 Interactive solvers for core Operations Management methods, built as a
 learning and portfolio project by an Industrial & Management Engineering
 student. (`GO` = *Gestão de Operações*, Portuguese for Operations Management.)
@@ -110,3 +112,7 @@ redeploys automatically.
   prototype served all six first and has been retired)
 - Deployed on Render via the `render.yaml` blueprint ✅ — live at
   [om-toolkit.onrender.com](https://om-toolkit.onrender.com)
+
+## License
+
+[MIT](LICENSE) — free to use, learn from, and build on.

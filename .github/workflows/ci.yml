@@ -1,0 +1,65 @@
+name: CI
+
+# Protects the live deploy: master autoDeploys to Render, so a red run here
+# is the last gate before a broken commit ships.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+
+  frontend:
+    name: Frontend (vitest + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build # tsc -b type-checks, then vite build
+
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - name: Run smoke tests
+        working-directory: web
+        # PYTHON=python points the Playwright webServer at the runner's python
+        # (the backend deps installed above) instead of the local .venv path.
+        env:
+          PYTHON: python
+        run: npm run e2e
