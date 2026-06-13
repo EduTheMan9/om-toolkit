@@ -35,3 +35,30 @@ def mm1(lam: float, mu: float) -> dict:
     wq = lq / lam
     w = wq + 1 / mu
     return {"rho": rho, "Lq": lq, "L": length, "Wq": wq, "W": w, "prob_wait": rho}
+
+
+def _check_servers(c: int) -> None:
+    if not isinstance(c, int) or c < 1:
+        raise ValueError("Number of servers must be a whole number >= 1.")
+
+
+def mmc(lam: float, mu: float, c: int) -> dict:
+    """Exact M/M/c via Erlang C: c identical exponential servers (rate mu each)."""
+    _check_rates(lam, mu)
+    _check_servers(c)
+    a = lam / mu  # offered load, in Erlangs
+    rho = a / c
+    _check_stable(rho)
+    # P0: normalising constant for the birth-death chain.
+    head = sum(a**n / factorial(n) for n in range(c))
+    tail = (a**c / factorial(c)) * (1 / (1 - rho))
+    p0 = 1 / (head + tail)
+    prob_wait = tail * p0  # Erlang C: probability an arrival has to queue
+    lq = prob_wait * rho / (1 - rho)
+    wq = lq / lam
+    length = lq + a
+    w = wq + 1 / mu
+    return {
+        "rho": rho, "Lq": lq, "L": length, "Wq": wq, "W": w,
+        "prob_wait": prob_wait, "P0": p0,
+    }
