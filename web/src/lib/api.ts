@@ -20,10 +20,13 @@ export interface PlanResult {
   setups: number;
   setup_cost: number;
   holding_cost: number;
+  backlog_cost: number;
   total_cost: number;
   ending_inventory: number[];
 }
 
+// the three base plans are always returned; the backlog-aware plan only when a
+// backlog penalty is supplied
 export type PlanName = "lot_for_lot" | "silver_meal" | "wagner_whitin";
 
 export interface SilverMealStep {
@@ -39,7 +42,7 @@ export interface SilverMealStep {
 }
 
 export interface DynamicResponse {
-  plans: Record<PlanName, PlanResult>;
+  plans: Record<PlanName, PlanResult> & { wagner_whitin_backlog?: PlanResult };
   steps: SilverMealStep[];
 }
 

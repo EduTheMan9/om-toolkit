@@ -6,6 +6,7 @@ from .dynamic import (
     silver_meal_with_steps,
     validate_inputs,
     wagner_whitin,
+    wagner_whitin_backlog,
 )
 from .eoq import EOQResult, economic_order_quantity
 
@@ -18,4 +19,5 @@ __all__ = [
     "silver_meal_with_steps",
     "validate_inputs",
     "wagner_whitin",
+    "wagner_whitin_backlog",
 ]

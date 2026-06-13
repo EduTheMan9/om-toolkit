@@ -20,35 +20,54 @@ def validate_inputs(demands: list[float], setup_cost: float, holding_cost: float
 
 
 def evaluate_plan(
-    demands: list[float], orders: list[float], setup_cost: float, holding_cost: float
+    demands: list[float],
+    orders: list[float],
+    setup_cost: float,
+    holding_cost: float,
+    backlog_cost: float = 0.0,
 ) -> dict:
-    """Cost out any ordering plan: setups, holding on end-of-period inventory."""
+    """Cost out any ordering plan: setups, holding on positive end-of-period
+    inventory, and (when backlog_cost > 0) backorder penalty on negative
+    inventory. With backlog_cost = 0 a shortage is an error, preserving the
+    original no-shortages model."""
     validate_inputs(demands, setup_cost, holding_cost)
     if len(orders) != len(demands):
         raise ValueError("Orders and demands must cover the same periods.")
+    if backlog_cost < 0:
+        raise ValueError("Backlog cost cannot be negative.")
 
     inventory = 0.0
     ending_inventory: list[float] = []
     setups = 0
     holding_total = 0.0
+    backlog_total = 0.0
     for demand, order in zip(demands, orders):
         if order > 0:
             setups += 1
         inventory += order - demand
         if inventory < 0:
-            raise ValueError(
-                f"Shortage in period {len(ending_inventory) + 1}: "
-                "orders do not cover demand."
-            )
+            if backlog_cost <= 0:
+                raise ValueError(
+                    f"Shortage in period {len(ending_inventory) + 1}: "
+                    "orders do not cover demand."
+                )
+            # negative inventory is a backorder: charge per unit per period late
+            backlog_total += backlog_cost * -inventory
+        else:
+            holding_total += holding_cost * inventory
         ending_inventory.append(inventory)
-        holding_total += holding_cost * inventory
+
+    # demand left unmet at the horizon's end is never satisfied — not a backorder
+    if inventory < 0:
+        raise ValueError("Backlog never cleared: the plan does not cover total demand.")
 
     setup_total = setups * setup_cost
     return {
         "setups": setups,
         "setup_cost": setup_total,
         "holding_cost": holding_total,
-        "total_cost": setup_total + holding_total,
+        "backlog_cost": backlog_total,
+        "total_cost": setup_total + holding_total + backlog_total,
         "ending_inventory": ending_inventory,
     }
 
@@ -146,4 +165,66 @@ def wagner_whitin(demands: list[float], setup_cost: float, holding_cost: float) 
         j = best_start[t]
         orders[j] = sum(demands[j:t])
         t = j
+    return orders
+
+
+def _block_cost(
+    demands: list[float], lo: int, p: int, hi: int,
+    setup_cost: float, holding_cost: float, backlog_cost: float,
+) -> float:
+    """Cost of serving the demand block [lo..hi] with ONE production in period p:
+    demand before p is backordered (waits p-k periods), demand after p is held
+    (waits k-p periods). One setup."""
+    holding = sum(holding_cost * (k - p) * demands[k] for k in range(p + 1, hi + 1))
+    backlog = sum(backlog_cost * (p - k) * demands[k] for k in range(lo, p))
+    return setup_cost + holding + backlog
+
+
+def wagner_whitin_backlog(
+    demands: list[float], setup_cost: float, holding_cost: float, backlog_cost: float
+) -> list[float]:
+    """Exact lot sizing WITH backlogging, by dynamic programming.
+
+    The plan splits into intervals, each served by exactly one production run.
+    Within an interval, demand before the run is backordered and demand after
+    is held; we pick both the interval boundaries and the run period to minimize
+    setup + holding + backlog. An interval with no demand needs no run (cost 0).
+
+      f(b) = min over a <= b of  f(a-1) + best_block_cost(a..b)
+
+    Reduces to the no-shortage Wagner-Whitin as backlog_cost -> infinity.
+    """
+    validate_inputs(demands, setup_cost, holding_cost)
+    if backlog_cost <= 0:
+        raise ValueError("Backlog cost must be positive for backlog planning.")
+    n = len(demands)
+    best_cost = [0.0] * (n + 1)
+    split = [0] * (n + 1)  # the a-1 boundary of the last interval ending at b
+    prod = [-1] * (n + 1)  # production period of that interval (-1 = none needed)
+    for b in range(1, n + 1):
+        best = float("inf")
+        for a in range(1, b + 1):
+            lo, hi = a - 1, b - 1  # 0-indexed demand range for interval [a..b]
+            if not any(demands[lo : hi + 1]):
+                interval_cost, p_best = 0.0, -1
+            else:
+                interval_cost, p_best = float("inf"), lo
+                for p in range(lo, hi + 1):
+                    c = _block_cost(
+                        demands, lo, p, hi, setup_cost, holding_cost, backlog_cost
+                    )
+                    if c < interval_cost:
+                        interval_cost, p_best = c, p
+            total = best_cost[a - 1] + interval_cost
+            if total < best:
+                best, split[b], prod[b] = total, a - 1, p_best
+        best_cost[b] = best
+
+    orders = [0.0] * n
+    b = n
+    while b > 0:
+        a_minus, p = split[b], prod[b]
+        if p >= 0:  # interval had demand -> one run covers the whole interval
+            orders[p] = sum(demands[a_minus:b])
+        b = a_minus
     return orders

@@ -15,6 +15,15 @@ test("teaching drawer narrates the first silver-meal decision", async ({ page })
   await expect(page.getByText("$105")).toBeVisible(); // avg after first extension
 });
 
+// Backlog (tests/test_dynamic_lot_sizing.py): [10,0,30], S=50, h=1, b=2 -> the
+// backlog-aware optimum produces once (qty 40) for $90, beating no-shortage plans.
+test("backlog penalty adds a backlog-aware plan that backorders", async ({ page }) => {
+  await page.goto("/lot-sizing?d=10,0,30&s=50&h=1&b=2");
+  await expect(page.getByText("WW + backlog").first()).toBeVisible();
+  await expect(page.getByText("backorders allowed")).toBeVisible();
+  await expect(page.getByText("$90").first()).toBeVisible();
+});
+
 test("eoq mode shows the closed-form optimum", async ({ page }) => {
   await page.goto("/lot-sizing?mode=eoq");
   await expect(page.getByText("Q* = 200.0")).toBeVisible();

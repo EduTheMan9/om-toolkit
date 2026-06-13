@@ -14,6 +14,7 @@ from core.lot_sizing.dynamic import (
     silver_meal,
     validate_inputs,
     wagner_whitin,
+    wagner_whitin_backlog,
 )
 
 DEMANDS = [50.0, 60.0, 90.0, 70.0, 30.0, 100.0]
@@ -77,6 +78,50 @@ def test_evaluate_plan_rejects_shortages():
 def test_invalid_inputs_rejected(demands, setup, holding, message):
     with pytest.raises(ValueError, match=message):
         validate_inputs(demands, setup, holding)
+
+
+# --- Backlogging --------------------------------------------------------------------
+# demands [10, 0, 30], S=50, h=1, b=2. With backlog allowed the optimum is to
+# produce ONCE in period 3 (qty 40), backordering period-1 demand for 2 periods:
+#   setup 50 + backlog 2 * 10 * 2 periods (40) + holding 0 = 90.
+# Cheaper than two setups (100) or one early setup that holds 30 for 2 periods
+# (110). Hand-traced in the plan doc.
+BL_DEMANDS = [10.0, 0.0, 30.0]
+BL_S, BL_H, BL_B = 50.0, 1.0, 2.0
+
+
+def test_evaluate_plan_costs_backorders_when_allowed():
+    cost = evaluate_plan(BL_DEMANDS, [0.0, 0.0, 40.0], BL_S, BL_H, backlog_cost=BL_B)
+    assert cost["setups"] == 1
+    assert cost["holding_cost"] == pytest.approx(0.0)
+    assert cost["backlog_cost"] == pytest.approx(40.0)
+    assert cost["total_cost"] == pytest.approx(90.0)
+    assert cost["ending_inventory"] == [-10.0, -10.0, 0.0]  # negative = backordered
+
+
+def test_evaluate_plan_still_rejects_shortage_without_backlog_cost():
+    # default backlog_cost = 0 keeps the no-shortage rule
+    with pytest.raises(ValueError, match="[Ss]hortage"):
+        evaluate_plan(BL_DEMANDS, [0.0, 0.0, 40.0], BL_S, BL_H)
+
+
+def test_evaluate_plan_rejects_plan_that_never_covers_demand():
+    with pytest.raises(ValueError, match="[Cc]over|[Bb]acklog"):
+        evaluate_plan([10.0, 30.0], [10.0, 0.0], BL_S, BL_H, backlog_cost=BL_B)
+
+
+def test_wagner_whitin_backlog_finds_the_backorder_optimum():
+    orders = wagner_whitin_backlog(BL_DEMANDS, BL_S, BL_H, BL_B)
+    assert orders == [0.0, 0.0, 40.0]
+    cost = evaluate_plan(BL_DEMANDS, orders, BL_S, BL_H, backlog_cost=BL_B)
+    assert cost["total_cost"] == pytest.approx(90.0)
+
+
+def test_wagner_whitin_backlog_matches_classic_when_backlog_is_expensive():
+    # a huge backlog penalty makes backordering never worth it, so the backlog
+    # DP must reproduce the no-shortage Wagner-Whitin plan
+    huge_b = 10_000.0
+    assert wagner_whitin_backlog(DEMANDS, S, H, huge_b) == wagner_whitin(DEMANDS, S, H)
 
 
 def test_silver_meal_with_steps_narrates_the_worked_example():

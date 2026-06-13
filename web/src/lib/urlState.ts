@@ -3,6 +3,7 @@ export interface DynamicInputs {
   demands: number[];
   setupCost: number;
   holdingCost: number;
+  backlogCost?: number; // optional backorder penalty; enables backlog planning
 }
 
 export function encodeDynamic(inputs: DynamicInputs): string {
@@ -10,6 +11,9 @@ export function encodeDynamic(inputs: DynamicInputs): string {
   params.set("d", inputs.demands.join(","));
   params.set("s", String(inputs.setupCost));
   params.set("h", String(inputs.holdingCost));
+  if (inputs.backlogCost !== undefined && inputs.backlogCost > 0) {
+    params.set("b", String(inputs.backlogCost));
+  }
   return params.toString();
 }
 
@@ -25,7 +29,14 @@ export function decodeDynamic(search: string): DynamicInputs | null {
   if (demands.some(Number.isNaN) || Number.isNaN(setupCost) || Number.isNaN(holdingCost)) {
     return null;
   }
-  return { demands, setupCost, holdingCost };
+  const b = params.get("b");
+  const backlogCost = b === null ? undefined : Number(b);
+  if (backlogCost !== undefined && (Number.isNaN(backlogCost) || backlogCost <= 0)) {
+    return { demands, setupCost, holdingCost };
+  }
+  return backlogCost === undefined
+    ? { demands, setupCost, holdingCost }
+    : { demands, setupCost, holdingCost, backlogCost };
 }
 
 export interface DispatchJob {

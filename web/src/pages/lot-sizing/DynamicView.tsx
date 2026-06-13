@@ -11,12 +11,15 @@ import { PlotCard } from "../../components/PlotCard";
 import { DYNAMIC_PRESETS } from "./presets";
 import { TeachingDrawer } from "./TeachingDrawer";
 
-const PLAN_LABELS: Record<PlanName, string> = {
+type AnyPlanName = PlanName | "wagner_whitin_backlog";
+
+const PLAN_LABELS: Record<AnyPlanName, string> = {
   wagner_whitin: "Wagner–Whitin",
   silver_meal: "Silver–Meal",
   lot_for_lot: "Lot-for-lot",
+  wagner_whitin_backlog: "WW + backlog",
 };
-const PLAN_ORDER: PlanName[] = ["wagner_whitin", "silver_meal", "lot_for_lot"];
+const BASE_ORDER: PlanName[] = ["wagner_whitin", "silver_meal", "lot_for_lot"];
 
 export function DynamicView({
   inputs,
@@ -27,7 +30,7 @@ export function DynamicView({
 }) {
   const [result, setResult] = useState<DynamicResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<PlanName>("wagner_whitin");
+  const [selected, setSelected] = useState<AnyPlanName>("wagner_whitin");
   const debounced = useDebouncedValue(inputs);
 
   useEffect(() => {
@@ -36,6 +39,7 @@ export function DynamicView({
       demands: debounced.demands,
       setup_cost: debounced.setupCost,
       holding_cost: debounced.holdingCost,
+      backlog_cost: debounced.backlogCost ?? null,
     })
       .then((res) => {
         if (!cancelled) {
@@ -51,8 +55,17 @@ export function DynamicView({
     };
   }, [debounced]);
 
-  const best = result?.plans.wagner_whitin;
-  const plan = result?.plans[selected];
+  // when a backlog penalty is set, the backlog-aware plan is the true optimum
+  const best = result ? (result.plans.wagner_whitin_backlog ?? result.plans.wagner_whitin) : undefined;
+  const bestName: AnyPlanName = result?.plans.wagner_whitin_backlog
+    ? "wagner_whitin_backlog"
+    : "wagner_whitin";
+  const presentPlans: AnyPlanName[] = result
+    ? [...BASE_ORDER, ...(result.plans.wagner_whitin_backlog ? ["wagner_whitin_backlog" as const] : [])]
+    : [];
+  // the selected plan can disappear when the backlog penalty is removed
+  const activeSelected: AnyPlanName = result?.plans[selected] ? selected : "wagner_whitin";
+  const plan = result?.plans[activeSelected];
   const orderPeriods = best
     ? best.orders.flatMap((q, i) => (q > 0 ? [i + 1] : [])).join(", ")
     : "";
@@ -84,6 +97,13 @@ export function DynamicView({
             onChange={(holdingCost) => onInputs({ ...inputs, holdingCost })}
           />
         </div>
+        <NumberField
+          label="Backlog b (0 = shortages not allowed)"
+          value={inputs.backlogCost ?? 0}
+          onChange={(backlogCost) =>
+            onInputs({ ...inputs, backlogCost: backlogCost > 0 ? backlogCost : undefined })
+          }
+        />
         {error && <div className="error-text">{error}</div>}
         <div style={{ marginTop: "auto" }}>
           <div className="label" style={{ marginBottom: 4 }}>Examples</div>
@@ -109,7 +129,8 @@ export function DynamicView({
           <div className="card hero-card">
             <div>
               <div className="label" style={{ color: "var(--accent)" }}>
-                Best plan — Wagner–Whitin (optimal)
+                Best plan — {PLAN_LABELS[bestName]} (optimal
+                {bestName === "wagner_whitin_backlog" ? ", backorders allowed" : ""})
               </div>
               <div className="hero-value">
                 {formatMoney(best.total_cost)}{" "}
@@ -125,19 +146,19 @@ export function DynamicView({
         )}
         {result && best && (
           <div className="row">
-            {PLAN_ORDER.map((name) => (
+            {presentPlans.map((name) => (
               <MetricCard
                 key={name}
                 label={PLAN_LABELS[name]}
-                value={formatMoney(result.plans[name].total_cost)}
+                value={formatMoney(result.plans[name]!.total_cost)}
                 detail={
-                  name === "wagner_whitin" ? (
+                  name === bestName ? (
                     <span style={{ color: "var(--accent)" }}>optimal ✓</span>
                   ) : (
-                    percentGap(result.plans[name].total_cost, best.total_cost)
+                    percentGap(result.plans[name]!.total_cost, best.total_cost)
                   )
                 }
-                selected={selected === name}
+                selected={activeSelected === name}
                 onClick={() => setSelected(name)}
               />
             ))}
@@ -145,7 +166,7 @@ export function DynamicView({
         )}
         {plan && (
           <PlotCard
-            label={`${PLAN_LABELS[selected]} — orders vs demand, with ending inventory`}
+            label={`${PLAN_LABELS[activeSelected]} — orders vs demand; inventory below 0 is backordered`}
             data={[
               { type: "bar", x: periods, y: inputs.demands, name: "Demand", marker: { color: "#e6eaee" } },
               { type: "bar", x: periods, y: plan.orders, name: "Order", marker: { color: "#0d9488" } },
@@ -153,12 +174,26 @@ export function DynamicView({
                 type: "scatter",
                 x: periods,
                 y: plan.ending_inventory,
-                name: "Ending inventory",
+                name: "End inventory (− = backorder)",
                 mode: "lines+markers",
                 line: { color: "#f59e0b" },
               },
             ]}
-            layout={{ barmode: "group", xaxis: { dtick: 1, title: { text: "period" } } }}
+            layout={{
+              barmode: "group",
+              xaxis: { dtick: 1, title: { text: "period" } },
+              shapes: [
+                {
+                  type: "line",
+                  xref: "paper",
+                  x0: 0,
+                  x1: 1,
+                  y0: 0,
+                  y1: 0,
+                  line: { color: "#101418", width: 1, dash: "dot" },
+                },
+              ],
+            }}
           />
         )}
         {result && <TeachingDrawer steps={result.steps} />}

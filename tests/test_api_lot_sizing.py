@@ -62,3 +62,22 @@ def test_dynamic_endpoint_rejects_shortage_free_invalid_input():
     response = client.post("/api/lot-sizing/dynamic", json=bad)
     assert response.status_code == 422
     assert "positive" in response.json()["detail"]
+
+
+def test_dynamic_endpoint_omits_backlog_plan_without_a_penalty():
+    body = client.post("/api/lot-sizing/dynamic", json=DYNAMIC_REQUEST).json()
+    assert "wagner_whitin_backlog" not in body["plans"]
+    assert body["plans"]["wagner_whitin"]["backlog_cost"] == pytest.approx(0.0)
+
+
+def test_dynamic_endpoint_adds_backlog_plan_when_penalty_given():
+    # demands [10,0,30], S=50, h=1, b=2 -> backlog optimum produces once (qty 40)
+    # in period 3 for total 90, beating the no-shortage plans.
+    req = {"demands": [10.0, 0.0, 30.0], "setup_cost": 50.0, "holding_cost": 1.0, "backlog_cost": 2.0}
+    body = client.post("/api/lot-sizing/dynamic", json=req).json()
+    backlog = body["plans"]["wagner_whitin_backlog"]
+    assert backlog["orders"] == [0.0, 0.0, 40.0]
+    assert backlog["total_cost"] == pytest.approx(90.0)
+    assert backlog["backlog_cost"] == pytest.approx(40.0)
+    # never worse than the no-shortage optimum
+    assert backlog["total_cost"] <= body["plans"]["wagner_whitin"]["total_cost"]

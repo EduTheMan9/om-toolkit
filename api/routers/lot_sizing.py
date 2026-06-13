@@ -9,6 +9,7 @@ from core.lot_sizing import (
     lot_for_lot,
     silver_meal_with_steps,
     wagner_whitin,
+    wagner_whitin_backlog,
 )
 
 router = APIRouter(prefix="/api/lot-sizing", tags=["lot-sizing"])
@@ -68,6 +69,9 @@ class DynamicRequest(BaseModel):
     demands: list[float]
     setup_cost: float
     holding_cost: float
+    # when given (> 0), shortages become backorders at this penalty and an extra
+    # backlog-aware Wagner-Whitin plan is added to the comparison
+    backlog_cost: float | None = None
 
 
 class PlanResult(BaseModel):
@@ -75,6 +79,7 @@ class PlanResult(BaseModel):
     setups: int
     setup_cost: float
     holding_cost: float
+    backlog_cost: float
     total_cost: float
     ending_inventory: list[float]
 
@@ -86,6 +91,7 @@ class DynamicResponse(BaseModel):
 
 @router.post("/dynamic", response_model=DynamicResponse)
 def dynamic(req: DynamicRequest) -> DynamicResponse:
+    bc = req.backlog_cost or 0.0
     sm_orders, sm_steps = silver_meal_with_steps(
         req.demands, req.setup_cost, req.holding_cost
     )
@@ -94,11 +100,17 @@ def dynamic(req: DynamicRequest) -> DynamicResponse:
         "silver_meal": sm_orders,
         "wagner_whitin": wagner_whitin(req.demands, req.setup_cost, req.holding_cost),
     }
+    # The backlog-aware optimum only makes sense once a penalty is set; the
+    # other plans never backorder, so costing them with bc leaves them unchanged.
+    if bc > 0:
+        plans["wagner_whitin_backlog"] = wagner_whitin_backlog(
+            req.demands, req.setup_cost, req.holding_cost, bc
+        )
     return DynamicResponse(
         plans={
             name: PlanResult(
                 orders=orders,
-                **evaluate_plan(req.demands, orders, req.setup_cost, req.holding_cost),
+                **evaluate_plan(req.demands, orders, req.setup_cost, req.holding_cost, bc),
             )
             for name, orders in plans.items()
         },
