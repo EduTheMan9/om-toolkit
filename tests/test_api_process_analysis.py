@@ -81,3 +81,35 @@ def test_littles_law_requires_exactly_one_unknown():
     )
     assert response.status_code == 422
     assert "exactly one" in response.json()["detail"]
+
+
+# --- TOC product mix (1500 bottleneck min; P3,P2,P1 by $/min; total $5900) ---
+PRODUCT_MIX_REQUEST = {
+    "products": [
+        {"name": "P1", "contribution_margin": 30, "bottleneck_time": 10, "demand": 100},
+        {"name": "P2", "contribution_margin": 24, "bottleneck_time": 6, "demand": 100},
+        {"name": "P3", "contribution_margin": 20, "bottleneck_time": 4, "demand": 100},
+    ],
+    "available_minutes": 1500,
+}
+
+
+def test_product_mix_endpoint_worked_example():
+    response = client.post("/api/process-analysis/product-mix", json=PRODUCT_MIX_REQUEST)
+    assert response.status_code == 200
+    body = response.json()
+    assert [a["name"] for a in body["allocations"]] == ["P3", "P2", "P1"]
+    assert body["total_contribution"] == pytest.approx(5900.0)
+    p1 = next(a for a in body["allocations"] if a["name"] == "P1")
+    assert p1["units"] == pytest.approx(50.0)  # highest unit margin, made last & partial
+    assert p1["limited_by"] == "capacity"
+    assert body["steps"][0]["kind"] == "rank"
+
+
+def test_product_mix_rejects_nonpositive_bottleneck_time():
+    bad = {**PRODUCT_MIX_REQUEST, "products": [
+        {"name": "X", "contribution_margin": 10, "bottleneck_time": 0, "demand": 5},
+    ]}
+    response = client.post("/api/process-analysis/product-mix", json=bad)
+    assert response.status_code == 422
+    assert "bottleneck" in response.json()["detail"]

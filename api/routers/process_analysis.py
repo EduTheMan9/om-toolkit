@@ -8,11 +8,13 @@ from pydantic import BaseModel
 from fastapi import APIRouter
 
 from core.process_analysis import (
+    Product,
     Resource,
     bottleneck,
     capacity_steps,
     flow_rate,
     implied_utilization,
+    optimal_product_mix,
     process_capacity,
     solve_littles_law,
     unloaded_flow_time,
@@ -89,6 +91,46 @@ def solve(req: SolveRequest) -> SolveResponse:
         ],
         steps=steps,
     )
+
+
+class ProductIn(BaseModel):
+    name: str
+    contribution_margin: float
+    bottleneck_time: float
+    demand: float
+
+
+class ProductMixRequest(BaseModel):
+    products: list[ProductIn]
+    available_minutes: float
+
+
+class AllocationOut(BaseModel):
+    name: str
+    ratio: float
+    units: float
+    minutes: float
+    contribution: float
+    limited_by: str  # "demand" | "capacity"
+
+
+class ProductMixResponse(BaseModel):
+    allocations: list[AllocationOut]
+    total_contribution: float
+    used_minutes: float
+    idle_minutes: float
+    available_minutes: float
+    steps: list[dict]
+
+
+@router.post("/product-mix", response_model=ProductMixResponse)
+def product_mix(req: ProductMixRequest) -> ProductMixResponse:
+    products = [
+        Product(p.name, p.contribution_margin, p.bottleneck_time, p.demand)
+        for p in req.products
+    ]
+    # optimal_product_mix validates (core's ValueError message -> 422)
+    return ProductMixResponse(**optimal_product_mix(products, req.available_minutes))
 
 
 class LittlesLawRequest(BaseModel):

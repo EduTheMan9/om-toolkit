@@ -7,27 +7,33 @@ import { PROCESS_PRESETS } from "./presets";
 import { ProcessView } from "./ProcessView";
 import { LITTLES_DEFAULTS, LittlesView } from "./LittlesView";
 import type { LittlesInputs } from "./LittlesView";
+import { PRODUCT_MIX_DEFAULTS, ProductMixView } from "./ProductMixView";
+import type { ProductMixInputs } from "./ProductMixView";
+
+type Mode = "capacity" | "littles" | "mix";
 
 export default function ProcessAnalysisPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [mode, setMode] = useState<"capacity" | "littles">(
-    searchParams.get("mode") === "littles" ? "littles" : "capacity",
-  );
+  const [mode, setMode] = useState<Mode>(() => {
+    const m = searchParams.get("mode");
+    return m === "littles" || m === "mix" ? m : "capacity";
+  });
   const [inputs, setInputs] = useState<ProcessInputs>(
     () =>
       decodeProcess("?" + searchParams.toString()) ??
       PROCESS_PRESETS["Sandwich line"],
   );
   const [littles, setLittles] = useState<LittlesInputs>(LITTLES_DEFAULTS);
+  const [mix, setMix] = useState<ProductMixInputs>(PRODUCT_MIX_DEFAULTS);
 
   const update = (next: ProcessInputs) => {
     setInputs(next);
     setSearchParams(encodeProcess(next), { replace: true });
   };
 
-  const switchMode = (next: "capacity" | "littles") => {
+  const switchMode = (next: Mode) => {
     setMode(next);
-    setSearchParams(next === "littles" ? "mode=littles" : encodeProcess(inputs), {
+    setSearchParams(next === "capacity" ? encodeProcess(inputs) : `mode=${next}`, {
       replace: true,
     });
   };
@@ -47,13 +53,17 @@ export default function ProcessAnalysisPage() {
         >
           Little's Law
         </button>
+        <button
+          className={mode === "mix" ? "active" : ""}
+          onClick={() => switchMode("mix")}
+        >
+          Product mix (TOC)
+        </button>
       </div>
       <div style={{ display: "flex", flex: 1 }}>
-        {mode === "capacity" ? (
-          <ProcessView inputs={inputs} onInputs={update} />
-        ) : (
-          <LittlesView inputs={littles} onInputs={setLittles} />
-        )}
+        {mode === "capacity" && <ProcessView inputs={inputs} onInputs={update} />}
+        {mode === "littles" && <LittlesView inputs={littles} onInputs={setLittles} />}
+        {mode === "mix" && <ProductMixView inputs={mix} onInputs={setMix} />}
       </div>
     </div>
   );

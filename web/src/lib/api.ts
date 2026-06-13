@@ -179,6 +179,39 @@ export interface ProcessResponse {
   steps: ProcessStep[];
 }
 
+export interface ProductMixAllocation {
+  name: string;
+  ratio: number;
+  units: number;
+  minutes: number;
+  contribution: number;
+  limited_by: "demand" | "capacity";
+}
+
+export interface ProductMixStep {
+  kind: "rank" | "allocate" | "total";
+  order?: string[];
+  ratios?: Record<string, number>;
+  product?: string;
+  ratio?: number;
+  units?: number;
+  minutes?: number;
+  contribution?: number;
+  remaining?: number;
+  limited_by?: "demand" | "capacity";
+  total_contribution?: number;
+  idle_minutes?: number;
+}
+
+export interface ProductMixResponse {
+  allocations: ProductMixAllocation[];
+  total_contribution: number;
+  used_minutes: number;
+  idle_minutes: number;
+  available_minutes: number;
+  steps: ProductMixStep[];
+}
+
 export type LittlesVariable = "inventory" | "flow_rate" | "flow_time";
 
 export interface ProductivityFactor {

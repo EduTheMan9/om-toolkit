@@ -21,3 +21,11 @@ test("littles law mode solves the missing variable", async ({ page }) => {
   await page.goto("/process-analysis?mode=littles");
   await expect(page.getByText("Flow time T = 5")).toBeVisible(); // I=20, R=4
 });
+
+// TOC product mix (tests/test_product_mix.py): 1500 min -> $5900, P1 made last.
+test("product mix ranks by contribution per bottleneck-minute", async ({ page }) => {
+  await page.goto("/process-analysis?mode=mix");
+  await expect(page.getByText("$5,900").first()).toBeVisible(); // total contribution
+  // P1 has the highest unit margin but runs out of capacity
+  await expect(page.getByText("capacity").first()).toBeVisible();
+});
