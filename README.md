@@ -15,7 +15,7 @@ wake the server.
 | # | Module | Status |
 |---|--------|--------|
 | 1 | **Assembly Line Balancing** — Largest Candidate Rule, Ranked Positional Weight, Kilbridge–Wester | ✅ available |
-| 2 | **Process analysis & bottleneck** — capacity, utilization, implied utilization, Little's Law, TOC product mix | ✅ available |
+| 2 | **Process analysis & bottleneck** — capacity, utilization, implied utilization, Little's Law, TOC product mix, queueing (VUT / M/M/1 / M/M/c) | ✅ available |
 | 3 | **Scheduling** — dispatching rules (FCFS/SPT/WSPT/EDD/LPT), Johnson's rule, Moore–Hodgson, weighted & due-date metrics, Gantt charts | ✅ available |
 | 4 | **MRP & lot-sizing** — EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin, backlog-aware Wagner–Whitin | ✅ available |
 | 5 | **Cellular manufacturing** — rank order clustering, grouping efficacy | ✅ available |
@@ -34,7 +34,10 @@ datasets.
 Describe a process as a sequence of resources (processing time + number of
 servers), optionally with demand: get the bottleneck, process capacity, flow
 rate, utilization and implied utilization per resource, and unloaded flow
-time — plus a Little's Law calculator (I = R × T).
+time — plus a Little's Law calculator (I = R × T) and a queueing tab that
+computes waiting times via the VUT (Kingman/Sakasegawa) approximation,
+compared against exact M/M/1 and M/M/c (Erlang C), with the utilization→wait
+curve and the V·U·T factor breakdown.
 
 ## Scheduling
 
