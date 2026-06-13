@@ -14,11 +14,14 @@ from core.process_analysis import (
     capacity_steps,
     flow_rate,
     implied_utilization,
+    mm1,
+    mmc,
     optimal_product_mix,
     process_capacity,
     solve_littles_law,
     unloaded_flow_time,
     utilization,
+    vut,
 )
 
 router = APIRouter(prefix="/api/process-analysis", tags=["process-analysis"])
@@ -157,3 +160,79 @@ def littles_law(req: LittlesLawRequest) -> LittlesLawResponse:
     solved_for = next(name for name, v in known.items() if v is None)
     known[solved_for] = value
     return LittlesLawResponse(solved_for=solved_for, **known)
+
+
+class QueueingRequest(BaseModel):
+    lam: float
+    mu: float
+    c: int = 1
+    ca: float = 1.0
+    cs: float = 1.0
+
+
+class VutOut(BaseModel):
+    rho: float
+    V: float
+    U: float
+    T: float
+    Wq: float
+    W: float
+    Lq: float
+    L: float
+
+
+class ExactOut(BaseModel):
+    model: str  # "M/M/1" | "M/M/c"
+    rho: float
+    Lq: float
+    L: float
+    Wq: float
+    W: float
+    prob_wait: float
+    is_exact_for_inputs: bool
+
+
+class CurveOut(BaseModel):
+    rho: list[float]
+    wq: list[float]
+    lq: list[float]
+
+
+class QueueingResponse(BaseModel):
+    vut: VutOut
+    exact: ExactOut
+    curve: CurveOut
+
+
+# rho sampled 0.05..0.95; the curve shows wait exploding as the queue saturates
+_SWEEP = [i / 20 for i in range(1, 20)]
+
+
+@router.post("/queueing", response_model=QueueingResponse)
+def queueing(req: QueueingRequest) -> QueueingResponse:
+    # core functions validate (their ValueError messages -> 422)
+    approx = vut(req.lam, req.mu, req.c, req.ca, req.cs)
+    if req.c == 1:
+        ex, model = mm1(req.lam, req.mu), "M/M/1"
+    else:
+        ex, model = mmc(req.lam, req.mu, req.c), "M/M/c"
+
+    # rho-sweep reuses vut so the formula lives only in core; vary lambda to hit
+    # each rho at the user's fixed mu, c, and CVs.
+    rho, wq, lq = [], [], []
+    for r in _SWEEP:
+        point = vut(r * req.c * req.mu, req.mu, req.c, req.ca, req.cs)
+        rho.append(r)
+        wq.append(point["Wq"])
+        lq.append(point["Lq"])
+
+    return QueueingResponse(
+        vut=VutOut(**approx),
+        exact=ExactOut(
+            model=model,
+            rho=ex["rho"], Lq=ex["Lq"], L=ex["L"], Wq=ex["Wq"], W=ex["W"],
+            prob_wait=ex["prob_wait"],
+            is_exact_for_inputs=(req.ca == 1 and req.cs == 1),
+        ),
+        curve=CurveOut(rho=rho, wq=wq, lq=lq),
+    )

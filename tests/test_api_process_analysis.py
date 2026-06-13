@@ -113,3 +113,36 @@ def test_product_mix_rejects_nonpositive_bottleneck_time():
     response = client.post("/api/process-analysis/product-mix", json=bad)
     assert response.status_code == 422
     assert "bottleneck" in response.json()["detail"]
+
+
+def test_queueing_mm1_endpoint():
+    # lambda=8, mu=10, c=1, Ca=Cs=1 -> exact M/M/1, Wq=0.4
+    req = {"lam": 8, "mu": 10, "c": 1, "ca": 1, "cs": 1}
+    response = client.post("/api/process-analysis/queueing", json=req)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["vut"]["Wq"] == pytest.approx(0.4)
+    assert body["vut"]["V"] == pytest.approx(1.0)
+    assert body["exact"]["model"] == "M/M/1"
+    assert body["exact"]["Wq"] == pytest.approx(0.4)
+    assert body["exact"]["is_exact_for_inputs"] is True
+    # curve is a rho-sweep for the chart
+    assert len(body["curve"]["rho"]) == len(body["curve"]["wq"]) > 0
+    assert body["curve"]["rho"][0] < body["curve"]["rho"][-1]
+
+
+def test_queueing_mmc_marks_reference_when_variable():
+    # c=2 with non-unit CVs: exact block is the Markovian reference, not exact
+    req = {"lam": 2, "mu": 1.5, "c": 2, "ca": 2, "cs": 0.5}
+    response = client.post("/api/process-analysis/queueing", json=req)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["exact"]["model"] == "M/M/c"
+    assert body["exact"]["is_exact_for_inputs"] is False
+
+
+def test_queueing_rejects_unstable_queue():
+    req = {"lam": 10, "mu": 8, "c": 1, "ca": 1, "cs": 1}
+    response = client.post("/api/process-analysis/queueing", json=req)
+    assert response.status_code == 422
+    assert "unstable" in response.json()["detail"]
