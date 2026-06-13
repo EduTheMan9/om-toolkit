@@ -1,27 +1,59 @@
-.home { padding: 48px 56px; max-width: 1000px; }
-.home h1 { font-size: 30px; font-weight: 700; }
-.home .tagline { margin: 8px 0 32px; }
+/* Contained + centered: wide enough to use the screen, capped so cards don't
+   stretch awkwardly long on ultrawide displays. margin auto balances the
+   whitespace instead of pinning everything to the left edge. */
+.home { padding: 56px 64px; max-width: 1180px; margin: 0 auto; }
 
+.home-hero { margin-bottom: 36px; }
+.home h1 { font-size: 34px; font-weight: 700; }
+.home .tagline { margin: 10px 0 0; max-width: 60ch; }
+
+/* auto-fit (not auto-fill) lets the real cards stretch to fill the row instead
+   of leaving them at their min width with empty phantom tracks beside them. */
 .home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
 }
 
-.module-card { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
-.module-card h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
-.module-card .decision { color: var(--subtle); font-size: 13px; flex: 1; }
-.module-card .actions { display: flex; gap: 10px; align-items: center; }
+.module-card {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 150px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.module-card:hover {
+  border-color: var(--accent-border);
+  box-shadow: 0 4px 16px rgba(16, 20, 24, 0.06);
+  transform: translateY(-2px);
+}
+.module-card h3 { font-size: 17px; display: flex; align-items: center; gap: 9px; }
+.module-card .decision { color: var(--subtle); font-size: 14px; line-height: 1.45; flex: 1; }
+.module-card .actions { display: flex; gap: 12px; align-items: center; }
 
 .module-card a.open {
   background: var(--accent);
   color: #fff;
   border-radius: 8px;
-  padding: 6px 14px;
+  padding: 7px 16px;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: none;
 }
+.module-card a.open:hover { background: #0b7d72; }
 
-.module-card a.example { color: var(--accent); font-size: 12px; text-decoration: none; }
+.module-card a.example { color: var(--accent); font-size: 13px; text-decoration: none; }
+.module-card a.example:hover { text-decoration: underline; }
 .module-card .soon { color: var(--muted); font-size: 12px; }
+
+/* How it works — portfolio context for first-time visitors. */
+.home-about { margin-top: 56px; padding-top: 36px; border-top: 1px solid var(--border); }
+.home-about h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+}
+.about-item h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.about-item p { color: var(--subtle); font-size: 14px; line-height: 1.55; }
