@@ -1,21 +1,11 @@
-import Plotly from "plotly.js-dist-min";
-import factory from "react-plotly.js/factory";
+import { lazy, Suspense } from "react";
 import type { Data, Layout } from "plotly.js";
 
-// react-plotly.js ships CommonJS; under Vite the default import can arrive
-// as the module object ({ default: fn }) instead of the function itself.
-const createPlotlyComponent =
-  typeof factory === "function"
-    ? factory
-    : (factory as { default: typeof factory }).default;
-const Plot = createPlotlyComponent(Plotly);
-
-const BASE_LAYOUT: Partial<Layout> = {
-  font: { family: "Inter, sans-serif", size: 12, color: "#101418" },
-  paper_bgcolor: "transparent",
-  plot_bgcolor: "transparent",
-  margin: { l: 40, r: 16, t: 16, b: 32 },
-};
+// Plotly is ~4 MB minified — by far the heaviest dependency. Loading it lazily
+// keeps it out of the entry bundle so the app shell (and pages without charts)
+// load fast; the chunk is fetched only when a chart first mounts. Only `type`
+// imports remain static here, and those are erased at build time.
+const PlotFigure = lazy(() => import("./PlotFigure"));
 
 export function PlotCard({
   label,
@@ -31,13 +21,10 @@ export function PlotCard({
   return (
     <div className="card" style={{ padding: "12px 14px" }}>
       <div className="label">{label}</div>
-      <Plot
-        data={data}
-        layout={{ ...BASE_LAYOUT, ...layout, height }}
-        config={{ displayModeBar: false, responsive: true }}
-        style={{ width: "100%" }}
-        useResizeHandler
-      />
+      {/* Reserve the chart's height while the Plotly chunk loads to avoid layout shift. */}
+      <Suspense fallback={<div style={{ height }} />}>
+        <PlotFigure data={data} layout={layout} height={height} />
+      </Suspense>
     </div>
   );
 }
