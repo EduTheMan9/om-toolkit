@@ -29,7 +29,7 @@ export function capacityTrace(
 }
 
 /** The signature queueing curve: mean wait Wq explodes as utilization -> 1. */
-export function waitCurveTrace(curve: { rho: number[]; wq: number[] }): Data {
+export function waitCurveTrace(curve: { rho: number[]; wq: number[]; lq?: number[] }): Data {
   return {
     type: "scatter",
     mode: "lines",

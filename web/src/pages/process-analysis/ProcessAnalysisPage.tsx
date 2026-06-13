@@ -9,14 +9,16 @@ import { LITTLES_DEFAULTS, LittlesView } from "./LittlesView";
 import type { LittlesInputs } from "./LittlesView";
 import { PRODUCT_MIX_DEFAULTS, ProductMixView } from "./ProductMixView";
 import type { ProductMixInputs } from "./ProductMixView";
+import { QUEUEING_DEFAULTS, QueueingView } from "./QueueingView";
+import type { QueueingInputs } from "./QueueingView";
 
-type Mode = "capacity" | "littles" | "mix";
+type Mode = "capacity" | "littles" | "mix" | "queue";
 
 export default function ProcessAnalysisPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<Mode>(() => {
     const m = searchParams.get("mode");
-    return m === "littles" || m === "mix" ? m : "capacity";
+    return m === "littles" || m === "mix" || m === "queue" ? m : "capacity";
   });
   const [inputs, setInputs] = useState<ProcessInputs>(
     () =>
@@ -25,6 +27,7 @@ export default function ProcessAnalysisPage() {
   );
   const [littles, setLittles] = useState<LittlesInputs>(LITTLES_DEFAULTS);
   const [mix, setMix] = useState<ProductMixInputs>(PRODUCT_MIX_DEFAULTS);
+  const [queue, setQueue] = useState<QueueingInputs>(QUEUEING_DEFAULTS);
 
   const update = (next: ProcessInputs) => {
     setInputs(next);
@@ -59,11 +62,18 @@ export default function ProcessAnalysisPage() {
         >
           Product mix (TOC)
         </button>
+        <button
+          className={mode === "queue" ? "active" : ""}
+          onClick={() => switchMode("queue")}
+        >
+          Queueing (VUT)
+        </button>
       </div>
       <div style={{ display: "flex", flex: 1 }}>
         {mode === "capacity" && <ProcessView inputs={inputs} onInputs={update} />}
         {mode === "littles" && <LittlesView inputs={littles} onInputs={setLittles} />}
         {mode === "mix" && <ProductMixView inputs={mix} onInputs={setMix} />}
+        {mode === "queue" && <QueueingView inputs={queue} onInputs={setQueue} />}
       </div>
     </div>
   );
