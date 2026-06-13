@@ -4,14 +4,18 @@ import { decodeProductivity, encodeProductivity } from "../../lib/urlState";
 import type { ProductivityInputs } from "../../lib/urlState";
 import "../../components/workbench.css";
 import { CompareView } from "./CompareView";
+import { OeeView } from "./OeeView";
 import { SingleFactorView } from "./SingleFactorView";
 import { PRODUCTIVITY_PRESETS } from "./presets";
 
+type Mode = "compare" | "single" | "oee";
+
 export default function ProductivityPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [mode, setMode] = useState<"compare" | "single">(
-    searchParams.get("mode") === "single" ? "single" : "compare",
-  );
+  const [mode, setMode] = useState<Mode>(() => {
+    const m = searchParams.get("mode");
+    return m === "single" || m === "oee" ? m : "compare";
+  });
   const [inputs, setInputs] = useState<ProductivityInputs>(
     () =>
       decodeProductivity("?" + searchParams.toString()) ??
@@ -23,9 +27,9 @@ export default function ProductivityPage() {
     setSearchParams(encodeProductivity(next), { replace: true });
   };
 
-  const switchMode = (next: "compare" | "single") => {
+  const switchMode = (next: Mode) => {
     setMode(next);
-    setSearchParams(next === "single" ? "mode=single" : encodeProductivity(inputs), {
+    setSearchParams(next === "compare" ? encodeProductivity(inputs) : `mode=${next}`, {
       replace: true,
     });
   };
@@ -45,13 +49,17 @@ export default function ProductivityPage() {
         >
           Single-factor calculator
         </button>
+        <button
+          className={mode === "oee" ? "active" : ""}
+          onClick={() => switchMode("oee")}
+        >
+          OEE
+        </button>
       </div>
       <div style={{ display: "flex", flex: 1 }}>
-        {mode === "compare" ? (
-          <CompareView inputs={inputs} onInputs={update} />
-        ) : (
-          <SingleFactorView />
-        )}
+        {mode === "compare" && <CompareView inputs={inputs} onInputs={update} />}
+        {mode === "single" && <SingleFactorView />}
+        {mode === "oee" && <OeeView />}
       </div>
     </div>
   );

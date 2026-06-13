@@ -5,10 +5,13 @@ from .metrics import (
     productivity_change,
     single_factor_productivity,
 )
+from .oee import oee_steps, overall_equipment_effectiveness
 
 __all__ = [
     "compare_periods",
     "multifactor_productivity",
+    "oee_steps",
+    "overall_equipment_effectiveness",
     "productivity_change",
     "single_factor_productivity",
 ]

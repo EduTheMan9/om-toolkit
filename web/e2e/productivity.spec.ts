@@ -24,3 +24,11 @@ test("single-factor calculator divides output by input", async ({ page }) => {
   await page.goto("/productivity?mode=single");
   await expect(page.getByText("2.5", { exact: true })).toBeVisible(); // 500/200
 });
+
+// Hand-traced OEE shift (tests/test_oee.py): A 92.9%, P 92.3%, Q 94.4%, OEE 81.0%.
+test("oee splits the planned time into the three loss factors", async ({ page }) => {
+  await page.goto("/productivity?mode=oee");
+  await expect(page.getByText("81.0%").first()).toBeVisible(); // OEE = 17/21
+  await expect(page.getByText("92.9%").first()).toBeVisible(); // Availability
+  await expect(page.getByText("94.4%").first()).toBeVisible(); // Quality
+});

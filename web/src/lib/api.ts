@@ -203,6 +203,29 @@ export interface ProductivityResponse {
   steps: ProductivityStep[];
 }
 
+export interface OeeStep {
+  kind: "availability" | "performance" | "quality" | "oee";
+  value: number;
+  planned_time?: number;
+  downtime?: number;
+  run_time?: number;
+  ideal_cycle_time?: number;
+  total_count?: number;
+  good_count?: number;
+  availability?: number;
+  performance?: number;
+  quality?: number;
+}
+
+export interface OeeResponse {
+  run_time: number;
+  availability: number;
+  performance: number;
+  quality: number;
+  oee: number;
+  steps: OeeStep[];
+}
+
 export interface CellularStep {
   kind: "rows" | "cols" | "converged" | "cells" | "efficacy";
   iteration?: number;

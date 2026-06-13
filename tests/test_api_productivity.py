@@ -58,3 +58,30 @@ def test_compare_rejects_duplicate_names():
     response = client.post("/api/productivity/compare", json=request)
     assert response.status_code == 422
     assert "uplicate" in response.json()["detail"]
+
+
+# --- OEE (worked shift: planned 420, downtime 30, ideal 1.0, 360 total, 340 good) ---
+OEE_REQUEST = {
+    "planned_time": 420, "downtime": 30, "ideal_cycle_time": 1.0,
+    "total_count": 360, "good_count": 340,
+}
+
+
+def test_oee_endpoint_worked_example():
+    response = client.post("/api/productivity/oee", json=OEE_REQUEST)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["availability"] == pytest.approx(13 / 14)
+    assert body["performance"] == pytest.approx(12 / 13)
+    assert body["quality"] == pytest.approx(17 / 18)
+    assert body["oee"] == pytest.approx(17 / 21)
+    assert [s["kind"] for s in body["steps"]] == [
+        "availability", "performance", "quality", "oee",
+    ]
+
+
+def test_oee_endpoint_rejects_good_over_total_with_core_message():
+    bad = {**OEE_REQUEST, "good_count": 400}
+    response = client.post("/api/productivity/oee", json=bad)
+    assert response.status_code == 422
+    assert "Good count" in response.json()["detail"]
