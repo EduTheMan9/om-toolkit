@@ -13,27 +13,32 @@ import "./Scheduling.css";
 const METHOD_INFO: Record<DispatchMethodName, { label: string; note: string }> = {
   fcfs: { label: "FCFS", note: "first come, first served — the no-thought baseline" },
   spt: { label: "SPT", note: "shortest first — provably minimizes avg completion" },
+  wspt: { label: "WSPT", note: "shortest weighted (p/w) — minimizes Σ w·completion" },
   edd: { label: "EDD", note: "earliest due date — minimizes the worst lateness" },
   lpt: { label: "LPT", note: "longest first — usually the cautionary tale" },
   moore_hodgson: { label: "Moore–Hodgson", note: "provably the fewest tardy jobs" },
   min_total_tardiness: { label: "Min total tardiness", note: "exact optimum (subset DP)" },
 };
 const METHOD_ORDER: DispatchMethodName[] = [
-  "fcfs", "spt", "edd", "lpt", "moore_hodgson", "min_total_tardiness",
+  "fcfs", "spt", "wspt", "edd", "lpt", "moore_hodgson", "min_total_tardiness",
 ];
 
 type MetricKey =
   | "avg_completion_time"
+  | "weighted_completion_time"
   | "avg_tardiness"
   | "total_tardiness"
   | "max_tardiness"
+  | "max_lateness"
   | "num_tardy";
 
 const METRIC_COLUMNS: { key: MetricKey; label: string }[] = [
   { key: "avg_completion_time", label: "Avg completion" },
+  { key: "weighted_completion_time", label: "Σ w·completion" },
   { key: "avg_tardiness", label: "Avg tardiness" },
   { key: "total_tardiness", label: "Total tardiness" },
   { key: "max_tardiness", label: "Max tardiness" },
+  { key: "max_lateness", label: "Max lateness (Lₘₐₓ)" },
   { key: "num_tardy", label: "# tardy" },
 ];
 
@@ -56,6 +61,7 @@ export function DispatchView({
         id: j.id,
         processing_time: j.processingTime,
         due_date: j.dueDate,
+        weight: j.weight,
       })),
     })
       .then((res) => {
@@ -101,11 +107,18 @@ export function DispatchView({
           </div>
         </div>
         <JobsTable
-          label="Jobs (processing time, due date)"
-          columns={["p", "due"]}
-          rows={jobs.map((j) => ({ id: j.id, a: j.processingTime, b: j.dueDate }))}
+          label="Jobs (processing time, due date, weight)"
+          columns={["p", "due", "w"]}
+          rows={jobs.map((j) => ({ id: j.id, a: j.processingTime, b: j.dueDate, c: j.weight }))}
           onChange={(rows) =>
-            onJobs(rows.map((r) => ({ id: r.id, processingTime: r.a, dueDate: r.b })))
+            onJobs(
+              rows.map((r) => ({
+                id: r.id,
+                processingTime: r.a,
+                dueDate: r.b,
+                weight: r.c ?? 1,
+              })),
+            )
           }
         />
         {error && <div className="error-text">{error}</div>}

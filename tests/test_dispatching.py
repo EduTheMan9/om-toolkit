@@ -86,8 +86,43 @@ def test_metrics_spt_minimizes_avg_completion():
         ([Job("A", 5.0, 10.0), Job("A", 3.0, 8.0)], "[Dd]uplicate"),
         ([Job("A", 0.0, 10.0)], "positive"),
         ([Job("A", 5.0, None)], "due date"),
+        ([Job("A", 5.0, 10.0, 0.0)], "[Ww]eight"),
     ],
 )
 def test_invalid_jobs_rejected(bad, message):
     with pytest.raises(ValueError, match=message):
         validate_jobs(bad)
+
+
+# --- WSPT (Smith's rule) and weighted metrics -------------------------------------
+# Jobs (p, w): A(6,1) B(2,2) C(8,4) D(3,1) E(9,3). Ratios p/w: A6 B1 C2 D3 E3.
+# WSPT order (ascending ratio, ties to lower id): B, C, D, E, A.
+# Completions B2 C10 D13 E22 A28 -> weighted Σ w·C = 4+40+13+66+28 = 151.
+WEIGHTED = [
+    Job("A", 6.0, 8.0, 1.0),
+    Job("B", 2.0, 6.0, 2.0),
+    Job("C", 8.0, 18.0, 4.0),
+    Job("D", 3.0, 15.0, 1.0),
+    Job("E", 9.0, 23.0, 3.0),
+]
+
+
+def test_wspt_sorts_by_processing_over_weight():
+    assert [j.id for j in RULES["WSPT"](WEIGHTED)] == ["B", "C", "D", "E", "A"]
+
+
+def test_wspt_equals_spt_when_all_weights_equal():
+    assert [j.id for j in RULES["WSPT"](JOBS)] == [j.id for j in RULES["SPT"](JOBS)]
+
+
+def test_weighted_completion_time_metric():
+    m = schedule_metrics(build_schedule(RULES["WSPT"](WEIGHTED)), WEIGHTED)
+    assert m["weighted_completion_time"] == pytest.approx(151.0)
+
+
+def test_max_lateness_can_be_negative_when_all_jobs_finish_early():
+    # one short job, generous due date -> lateness = 5 - 100 = -95
+    jobs = [Job("A", 5.0, 100.0)]
+    m = schedule_metrics(build_schedule(jobs), jobs)
+    assert m["max_lateness"] == pytest.approx(-95.0)
+    assert m["max_tardiness"] == pytest.approx(0.0)  # tardiness floors at 0

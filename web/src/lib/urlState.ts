@@ -32,6 +32,7 @@ export interface DispatchJob {
   id: string;
   processingTime: number;
   dueDate: number;
+  weight: number; // priority / cost rate; 1 = unweighted
 }
 
 export interface JohnsonJob {
@@ -65,13 +66,26 @@ function decodeTriples(search: string): [string, number, number][] | null {
 }
 
 export function encodeDispatch(jobs: DispatchJob[]): string {
-  return encodeTriples(jobs.map((j) => [j.id, j.processingTime, j.dueDate]));
+  const base = encodeTriples(jobs.map((j) => [j.id, j.processingTime, j.dueDate]));
+  // Weights ride alongside in their own param so the shared j= triple format
+  // stays intact; only emitted when at least one job is actually weighted.
+  if (jobs.some((j) => j.weight !== 1)) {
+    return base + "&w=" + jobs.map((j) => j.weight).join(",");
+  }
+  return base;
 }
 
 export function decodeDispatch(search: string): DispatchJob[] | null {
   const triples = decodeTriples(search);
   if (!triples) return null;
-  return triples.map(([id, processingTime, dueDate]) => ({ id, processingTime, dueDate }));
+  const raw = new URLSearchParams(search).get("w");
+  const weights = raw ? raw.split(",").map(Number) : [];
+  return triples.map(([id, processingTime, dueDate], i) => ({
+    id,
+    processingTime,
+    dueDate,
+    weight: Number.isFinite(weights[i]) && weights[i] > 0 ? weights[i] : 1,
+  }));
 }
 
 export function encodeJohnson(jobs: JohnsonJob[]): string {

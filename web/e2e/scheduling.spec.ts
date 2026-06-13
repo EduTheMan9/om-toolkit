@@ -9,6 +9,15 @@ test("dispatching compares every rule on the shared-link example", async ({ page
   await expect(page.getByText("Moore–Hodgson").first()).toBeVisible();
 });
 
+// Weighted jobs (w=4,1 etc): WSPT pulls the important long job C forward to
+// B → C → D → E → A (hand-traced in tests/test_dispatching.py).
+test("wspt reorders jobs by weighted processing time", async ({ page }) => {
+  await page.goto("/scheduling?j=A,6,8;B,2,6;C,8,18;D,3,15;E,9,23&w=1,2,4,1,3");
+  // select the WSPT row (its note is unique) so the hero shows its sequence
+  await page.getByText("shortest weighted").click();
+  await expect(page.getByText("B → C → D → E → A").first()).toBeVisible();
+});
+
 test("johnson mode shows the optimal sequence and narrates the first pick", async ({ page }) => {
   await page.goto("/scheduling?mode=johnson&j=J1,3,6;J2,5,2;J3,1,2;J4,6,6;J5,7,5");
   await expect(page.getByText("J3 → J1 → J4 → J5 → J2").first()).toBeVisible();

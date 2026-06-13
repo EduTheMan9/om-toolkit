@@ -4,10 +4,15 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Job:
-    """A job for single-machine dispatching (all jobs available at t = 0)."""
+    """A job for single-machine dispatching (all jobs available at t = 0).
+
+    weight is the job's priority/cost rate (e.g. holding cost per unit time);
+    it defaults to 1, so an unweighted problem behaves exactly as before.
+    """
     id: str
     processing_time: float
     due_date: float | None = None
+    weight: float = 1.0
 
 
 @dataclass(frozen=True)

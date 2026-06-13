@@ -31,10 +31,24 @@ describe("dynamic lot-sizing URL state", () => {
 describe("scheduling URL state", () => {
   it("round-trips dispatch jobs through the query string", () => {
     const jobs = [
-      { id: "A", processingTime: 6, dueDate: 8 },
-      { id: "B", processingTime: 2, dueDate: 6 },
+      { id: "A", processingTime: 6, dueDate: 8, weight: 1 },
+      { id: "B", processingTime: 2, dueDate: 6, weight: 1 },
     ];
     expect(decodeDispatch("?" + encodeDispatch(jobs))).toEqual(jobs);
+  });
+
+  it("round-trips job weights and defaults missing weights to 1", () => {
+    const jobs = [
+      { id: "A", processingTime: 6, dueDate: 8, weight: 4 },
+      { id: "B", processingTime: 2, dueDate: 6, weight: 1 },
+    ];
+    const encoded = encodeDispatch(jobs);
+    expect(encoded).toContain("w=4,1");
+    expect(decodeDispatch("?" + encoded)).toEqual(jobs);
+    // no w= param at all -> every weight falls back to 1
+    expect(decodeDispatch("?j=A,6,8")).toEqual([
+      { id: "A", processingTime: 6, dueDate: 8, weight: 1 },
+    ]);
   });
 
   it("round-trips johnson jobs and ignores extra params like mode", () => {

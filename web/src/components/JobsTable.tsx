@@ -4,12 +4,13 @@ export interface JobRow {
   id: string;
   a: number;
   b: number;
+  c?: number; // optional third numeric column (e.g. job weight)
 }
 
-/** Editable job table: text ID + two numeric columns (headers via props).
- * Pasting a column from Excel/Sheets into a numeric cell fills downward,
- * same convention as DemandTable (capped at the existing rows — new jobs
- * need an ID, so paste can't invent them). */
+/** Editable job table: text ID + two or three numeric columns (headers via
+ * props). Pasting a column from Excel/Sheets into a numeric cell fills
+ * downward, same convention as DemandTable (capped at the existing rows — new
+ * jobs need an ID, so paste can't invent them). */
 export function JobsTable({
   label,
   idLabel = "job",
@@ -19,17 +20,19 @@ export function JobsTable({
 }: {
   label: string;
   idLabel?: string;
-  columns: [string, string];
+  columns: [string, string] | [string, string, string];
   rows: JobRow[];
   onChange: (next: JobRow[]) => void;
 }) {
+  const keys = (columns.length === 3 ? ["a", "b", "c"] : ["a", "b"]) as ("a" | "b" | "c")[];
+
   const setRow = (i: number, patch: Partial<JobRow>) => {
     const next = [...rows];
     next[i] = { ...next[i], ...patch };
     onChange(next);
   };
 
-  const handlePaste = (i: number, key: "a" | "b", e: React.ClipboardEvent) => {
+  const handlePaste = (i: number, key: "a" | "b" | "c", e: React.ClipboardEvent) => {
     const pasted = e.clipboardData
       .getData("text")
       .split(/[\s,;]+/)
@@ -48,7 +51,9 @@ export function JobsTable({
     const prefix = idLabel.charAt(0).toUpperCase();
     let n = rows.length + 1;
     while (rows.some((r) => r.id === `${prefix}${n}`)) n += 1;
-    onChange([...rows, { id: `${prefix}${n}`, a: 1, b: 1 }]);
+    const blank: JobRow = { id: `${prefix}${n}`, a: 1, b: 1 };
+    if (columns.length === 3) blank.c = 1;
+    onChange([...rows, blank]);
   };
 
   return (
@@ -58,8 +63,9 @@ export function JobsTable({
         <thead>
           <tr>
             <th>{idLabel}</th>
-            <th>{columns[0]}</th>
-            <th>{columns[1]}</th>
+            {columns.map((c) => (
+              <th key={c}>{c}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -71,13 +77,13 @@ export function JobsTable({
                   onChange={(e) => setRow(i, { id: e.target.value })}
                 />
               </td>
-              {(["a", "b"] as const).map((key) => (
+              {keys.map((key) => (
                 <td key={key}>
                   <input
                     type="number"
                     step="any"
                     min={0}
-                    value={Number.isNaN(row[key]) ? "" : row[key]}
+                    value={row[key] === undefined || Number.isNaN(row[key]) ? "" : row[key]}
                     onChange={(e) => setRow(i, { [key]: e.target.valueAsNumber })}
                     onPaste={(e) => handlePaste(i, key, e)}
                   />

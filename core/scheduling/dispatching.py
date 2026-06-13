@@ -21,6 +21,8 @@ def validate_jobs(jobs: list[Job]) -> None:
             raise ValueError(f"Job {j.id}: processing time must be positive.")
         if j.due_date is None:
             raise ValueError(f"Job {j.id}: a due date is required.")
+        if j.weight <= 0:
+            raise ValueError(f"Job {j.id}: weight must be positive.")
 
 
 RULES = {
@@ -28,6 +30,10 @@ RULES = {
     "SPT": lambda jobs: sorted(jobs, key=lambda j: (j.processing_time, j.id)),
     "LPT": lambda jobs: sorted(jobs, key=lambda j: (-j.processing_time, j.id)),
     "EDD": lambda jobs: sorted(jobs, key=lambda j: (j.due_date, j.id)),
+    # WSPT (Smith's rule): shortest weighted processing time first. Provably
+    # minimizes total weighted completion time Σ w·C. Collapses to SPT when
+    # every weight is 1.
+    "WSPT": lambda jobs: sorted(jobs, key=lambda j: (j.processing_time / j.weight, j.id)),
 }
 
 
@@ -47,12 +53,18 @@ def schedule_metrics(schedule: list[ScheduledJob], jobs: list[Job]) -> dict:
     which is what distinguishes it from lateness.
     """
     due = {j.id: j.due_date for j in jobs}
+    weight = {j.id: j.weight for j in jobs}
     completions = [s.end for s in schedule]
-    tardiness = [max(0.0, s.end - due[s.id]) for s in schedule]
+    lateness = [s.end - due[s.id] for s in schedule]  # may be negative (early)
+    tardiness = [max(0.0, late) for late in lateness]
     return {
         "avg_completion_time": sum(completions) / len(completions),
+        "weighted_completion_time": sum(weight[s.id] * s.end for s in schedule),
         "avg_tardiness": sum(tardiness) / len(tardiness),
         "total_tardiness": sum(tardiness),
         "max_tardiness": max(tardiness),
+        # L_max: lateness keeps its sign, so finishing everything early shows a
+        # negative max — distinct from tardiness, which floors at zero.
+        "max_lateness": max(lateness),
         "num_tardy": sum(1 for t in tardiness if t > 0),
     }

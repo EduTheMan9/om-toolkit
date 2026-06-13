@@ -24,6 +24,7 @@ class DispatchJobIn(BaseModel):
     id: str
     processing_time: float
     due_date: float
+    weight: float = 1.0
 
 
 class DispatchRequest(BaseModel):
@@ -40,9 +41,11 @@ class MethodResult(BaseModel):
     sequence: list[str]
     schedule: list[ScheduledJobOut]
     avg_completion_time: float
+    weighted_completion_time: float
     avg_tardiness: float
     total_tardiness: float
     max_tardiness: float
+    max_lateness: float
     num_tardy: int
 
 
@@ -53,7 +56,7 @@ class DispatchResponse(BaseModel):
 
 @router.post("/dispatch", response_model=DispatchResponse)
 def dispatch(req: DispatchRequest) -> DispatchResponse:
-    jobs = [Job(j.id, j.processing_time, j.due_date) for j in req.jobs]
+    jobs = [Job(j.id, j.processing_time, j.due_date, j.weight) for j in req.jobs]
     # RULES are bare sort keys; validate explicitly so bad input fails fast
     # with core's human-readable message (the ValueError handler maps it to 422).
     validate_jobs(jobs)

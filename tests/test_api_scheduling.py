@@ -48,6 +48,31 @@ def test_dispatch_skips_exact_dp_beyond_the_cap():
     assert "moore_hodgson" in body["methods"]  # O(n log n), never capped
 
 
+def test_dispatch_includes_wspt_and_weighted_metrics():
+    # weights default to 1 if omitted -> WSPT must match SPT here
+    body = client.post("/api/scheduling/dispatch", json=DISPATCH_REQUEST).json()
+    assert body["methods"]["wspt"]["sequence"] == body["methods"]["spt"]["sequence"]
+    # new metrics are present on every method
+    assert "weighted_completion_time" in body["methods"]["fcfs"]
+    assert "max_lateness" in body["methods"]["fcfs"]
+
+
+def test_dispatch_wspt_reorders_under_weights():
+    # C is long (8) but important (w=4): WSPT pulls it forward, SPT buries it.
+    weighted = {
+        "jobs": [
+            {"id": "A", "processing_time": 6, "due_date": 8, "weight": 1},
+            {"id": "B", "processing_time": 2, "due_date": 6, "weight": 2},
+            {"id": "C", "processing_time": 8, "due_date": 18, "weight": 4},
+            {"id": "D", "processing_time": 3, "due_date": 15, "weight": 1},
+            {"id": "E", "processing_time": 9, "due_date": 23, "weight": 3},
+        ]
+    }
+    body = client.post("/api/scheduling/dispatch", json=weighted).json()
+    assert body["methods"]["wspt"]["sequence"] == ["B", "C", "D", "E", "A"]
+    assert body["methods"]["wspt"]["weighted_completion_time"] == pytest.approx(151.0)
+
+
 def test_dispatch_rejects_duplicate_ids_with_core_message():
     bad = {"jobs": [DISPATCH_REQUEST["jobs"][0], DISPATCH_REQUEST["jobs"][0]]}
     response = client.post("/api/scheduling/dispatch", json=bad)

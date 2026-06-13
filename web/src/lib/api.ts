@@ -62,6 +62,7 @@ export interface ScheduledJob {
 export type DispatchMethodName =
   | "fcfs"
   | "spt"
+  | "wspt"
   | "edd"
   | "lpt"
   | "moore_hodgson"
@@ -71,9 +72,11 @@ export interface DispatchMethodResult {
   sequence: string[];
   schedule: ScheduledJob[];
   avg_completion_time: number;
+  weighted_completion_time: number;
   avg_tardiness: number;
   total_tardiness: number;
   max_tardiness: number;
+  max_lateness: number;
   num_tardy: number;
 }
 
