@@ -29,3 +29,10 @@ test("product mix ranks by contribution per bottleneck-minute", async ({ page })
   // P1 has the highest unit margin but runs out of capacity
   await expect(page.getByText("capacity").first()).toBeVisible();
 });
+
+// Queueing (tests/test_queueing.py): M/M/1 lambda=8, mu=10 -> rho=80%, Wq=0.4.
+test("queueing tab shows the M/M/1 default", async ({ page }) => {
+  await page.goto("/process-analysis?mode=queue");
+  await expect(page.getByText("80%").first()).toBeVisible(); // utilization
+  await expect(page.getByText(/exact M\/M\/1: 0.4/)).toBeVisible(); // Wq metric
+});
