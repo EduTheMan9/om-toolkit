@@ -4,6 +4,10 @@ Interactive solvers for core Operations Management methods, built as a
 learning and portfolio project by an Industrial & Management Engineering
 student. (`GO` = *Gestão de Operações*, Portuguese for Operations Management.)
 
+**▶ Live at [om-toolkit.onrender.com](https://om-toolkit.onrender.com)** — hosted
+on Render's free tier, so the first request after an idle spell takes ~30s to
+wake the server.
+
 ## Modules
 
 | # | Module | Status |
@@ -94,13 +98,15 @@ docs/   design specs and implementation plans
 
 ## Deployment
 
-The repo ships a multi-stage `Dockerfile` (Node builds `web/`, FastAPI
-serves the API plus the built frontend) and a `render.yaml` blueprint —
-connecting the repo on [Render](https://render.com) deploys it, and every
-push to `master` redeploys automatically.
+Live at **[om-toolkit.onrender.com](https://om-toolkit.onrender.com)**. The
+repo ships a multi-stage `Dockerfile` (Node builds `web/`, FastAPI serves the
+API plus the built frontend) and a `render.yaml` blueprint — connecting the
+repo on [Render](https://render.com) deploys it, and every push to `master`
+redeploys automatically.
 
 ## Roadmap
 
 - All six modules live in the React + FastAPI app ✅ (the original Streamlit
   prototype served all six first and has been retired)
-- Deployed on Render via the `render.yaml` blueprint ✅
+- Deployed on Render via the `render.yaml` blueprint ✅ — live at
+  [om-toolkit.onrender.com](https://om-toolkit.onrender.com)
