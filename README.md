@@ -13,11 +13,11 @@ wake the server.
 | # | Module | Status |
 |---|--------|--------|
 | 1 | **Assembly Line Balancing** — Largest Candidate Rule, Ranked Positional Weight, Kilbridge–Wester | ✅ available |
-| 2 | **Process analysis & bottleneck** — capacity, utilization, implied utilization, Little's Law | ✅ available |
-| 3 | **Scheduling** — dispatching rules (FCFS/SPT/EDD/LPT), Johnson's rule, Gantt charts | ✅ available |
-| 4 | **MRP & lot-sizing** — EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin | ✅ available |
+| 2 | **Process analysis & bottleneck** — capacity, utilization, implied utilization, Little's Law, TOC product mix | ✅ available |
+| 3 | **Scheduling** — dispatching rules (FCFS/SPT/WSPT/EDD/LPT), Johnson's rule, Moore–Hodgson, weighted & due-date metrics, Gantt charts | ✅ available |
+| 4 | **MRP & lot-sizing** — EOQ, lot-for-lot, Silver–Meal, Wagner–Whitin, backlog-aware Wagner–Whitin | ✅ available |
 | 5 | **Cellular manufacturing** — rank order clustering, grouping efficacy | ✅ available |
-| 6 | **Productivity metrics** — single-factor, multifactor, period-over-period change | ✅ available |
+| 6 | **Productivity metrics** — single-factor, multifactor, period-over-period change, OEE | ✅ available |
 
 ## Assembly Line Balancing
 

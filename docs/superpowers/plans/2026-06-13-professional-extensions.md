@@ -92,11 +92,15 @@ Today shortages are forbidden. Allow demand to be met **late** at a penalty
 - **UI:** optional backlog-cost input in DynamicView; when set, show the extra
   plan column and allow negative (backordered) inventory in the inventory chart.
 
-## Execution order (low-risk first, headliner last)
-1. OEE — simplest, pure formula, isolated new view.
-2. WSPT + Moore — touches the Job model but logic is clean.
-3. TOC product mix — new core module, moderate.
-4. Backlog cost — the DP, most involved; do it with the most context loaded.
+## Execution order (low-risk first, headliner last) — ALL DONE 2026-06-13
+1. ✅ OEE — core/productivity/oee.py + tab + drawer (hand trace 17/21 = 81.0%).
+2. ✅ Job weights + WSPT + L_max / weighted-completion metrics. (Moore–Hodgson
+   already existed in core/scheduling/optimal.py, so we added the weighted side.)
+3. ✅ TOC product mix — core/process_analysis/product_mix.py + tab + drawer.
+4. ✅ Backlog cost — evaluate_plan backlog + wagner_whitin_backlog DP + UI.
+
+All shipped full-stack with hand-traced tests and Playwright smokes; 193
+backend + 33 unit + 20 e2e green.
 
 ## Per-feature checklist (the project's established rhythm)
 - [ ] Hand-trace the example in the test docstring, then write the failing test.
