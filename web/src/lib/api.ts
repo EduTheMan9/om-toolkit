@@ -302,3 +302,27 @@ export interface LittlesLawResponse {
   flow_rate: number;
   flow_time: number;
 }
+
+export interface QueueingResponse {
+  vut: {
+    rho: number;
+    V: number;
+    U: number;
+    T: number;
+    Wq: number;
+    W: number;
+    Lq: number;
+    L: number;
+  };
+  exact: {
+    model: "M/M/1" | "M/M/c";
+    rho: number;
+    Lq: number;
+    L: number;
+    Wq: number;
+    W: number;
+    prob_wait: number;
+    is_exact_for_inputs: boolean;
+  };
+  curve: { rho: number[]; wq: number[]; lq: number[] };
+}
