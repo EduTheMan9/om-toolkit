@@ -44,6 +44,12 @@ DIST_DIR = Path(__file__).resolve().parent.parent / "web" / "dist"
 async def spa(path: str):
     """Serve the built frontend; unknown paths fall back to index.html so
     client-side routes (e.g. /lot-sizing) survive refreshes and deep links."""
+    # Unmatched /api/* paths reach this catch-all only because no real route
+    # matched; serving index.html here would hand HTML to a frontend expecting
+    # JSON. Return a JSON 404 instead. (`path` has no leading slash, so the
+    # request "/api/foo" arrives as "api/foo".)
+    if path.startswith("api/"):
+        return JSONResponse(status_code=404, content={"detail": "Not found"})
     if not DIST_DIR.exists():
         return JSONResponse(status_code=404, content={"detail": "Frontend not built."})
     file = DIST_DIR / path
