@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { capacityTrace, perHour, utilizationTrace } from "./charts";
+import {
+  capacityTrace,
+  operatingPointTrace,
+  perHour,
+  utilizationTrace,
+  vutBreakdownTrace,
+  waitCurveTrace,
+} from "./charts";
 
 const RESOURCES = [
   { name: "A", processing_time: 10, servers: 2, capacity: 0.2, utilization: 0.75, implied_utilization: 0.75 },
@@ -28,5 +35,33 @@ describe("perHour", () => {
   it("formats a per-minute rate as units per hour", () => {
     expect(perHour(1 / 6)).toBe("10");
     expect(perHour(0.15)).toBe("9");
+  });
+});
+
+describe("waitCurveTrace", () => {
+  it("plots Wq against utilization as a line", () => {
+    const trace = waitCurveTrace({ rho: [0.5, 0.9], wq: [0.1, 0.9], lq: [0.05, 0.81] }) as any;
+    expect(trace.type).toBe("scatter");
+    expect(trace.mode).toBe("lines");
+    expect(trace.x).toEqual([0.5, 0.9]);
+    expect(trace.y).toEqual([0.1, 0.9]);
+  });
+});
+
+describe("operatingPointTrace", () => {
+  it("marks the user's operating point", () => {
+    const trace = operatingPointTrace(0.8, 0.4) as any;
+    expect(trace.mode).toBe("markers");
+    expect(trace.x).toEqual([0.8]);
+    expect(trace.y).toEqual([0.4]);
+  });
+});
+
+describe("vutBreakdownTrace", () => {
+  it("shows the three factors as bars", () => {
+    const trace = vutBreakdownTrace(1, 4, 0.1) as any;
+    expect(trace.type).toBe("bar");
+    expect(trace.y).toEqual([1, 4, 0.1]);
+    expect(trace.x.length).toBe(3);
   });
 });

@@ -28,6 +28,47 @@ export function capacityTrace(
   };
 }
 
+/** The signature queueing curve: mean wait Wq explodes as utilization -> 1. */
+export function waitCurveTrace(curve: { rho: number[]; wq: number[] }): Data {
+  return {
+    type: "scatter",
+    mode: "lines",
+    x: curve.rho,
+    y: curve.wq,
+    line: { color: "#0d9488", width: 2 },
+    hovertemplate: "ρ=%{x:.2f}<br>Wq=%{y:.3f}<extra></extra>",
+    name: "Wq",
+    showlegend: false,
+  };
+}
+
+/** Red dot marking where the user's inputs sit on the wait curve. */
+export function operatingPointTrace(rho: number, wq: number): Data {
+  return {
+    type: "scatter",
+    mode: "markers",
+    x: [rho],
+    y: [wq],
+    marker: { color: "#dc2626", size: 10 },
+    hovertemplate: "operating point<br>ρ=%{x:.2f}<br>Wq=%{y:.3f}<extra></extra>",
+    showlegend: false,
+  };
+}
+
+/** V × U × T decomposition of the approximate wait, as three bars. */
+export function vutBreakdownTrace(v: number, u: number, t: number): Data {
+  return {
+    type: "bar",
+    x: ["V (variability)", "U (utilization)", "T (time)"],
+    y: [v, u, t],
+    marker: { color: "#0d9488" },
+    text: [v, u, t].map((n) => formatNumber(n)),
+    textposition: "outside",
+    hoverinfo: "skip",
+    showlegend: false,
+  };
+}
+
 /** Horizontal utilization bars; anything past the 100% line is overload. */
 export function utilizationTrace(names: string[], values: number[]): Data {
   return {
