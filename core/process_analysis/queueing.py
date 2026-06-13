@@ -62,3 +62,28 @@ def mmc(lam: float, mu: float, c: int) -> dict:
         "rho": rho, "Lq": lq, "L": length, "Wq": wq, "W": w,
         "prob_wait": prob_wait, "P0": p0,
     }
+
+
+def vut(lam: float, mu: float, c: int, ca: float, cs: float) -> dict:
+    """Sakasegawa G/G/c waiting-time approximation, decomposed as V * U * T.
+
+    V (variability) = (Ca^2 + Cs^2)/2   -- the squared CVs of inter-arrival and
+                                           service times.
+    U (utilization) = rho^(sqrt(2(c+1)) - 1) / (c*(1-rho))
+    T (time)        = 1/mu               -- the mean service time.
+    Reduces to Kingman's G/G/1 at c=1, and to exact M/M/1 when Ca=Cs=1, c=1.
+    """
+    _check_rates(lam, mu)
+    _check_servers(c)
+    if ca < 0 or cs < 0:
+        raise ValueError("Coefficient of variation must be >= 0.")
+    rho = lam / (c * mu)
+    _check_stable(rho)
+    v = (ca**2 + cs**2) / 2
+    u = rho ** (sqrt(2 * (c + 1)) - 1) / (c * (1 - rho))
+    t = 1 / mu
+    wq = v * u * t
+    w = wq + t
+    lq = lam * wq          # Little's Law on the queue
+    length = lam * w       # Little's Law on the system
+    return {"rho": rho, "V": v, "U": u, "T": t, "Wq": wq, "W": w, "Lq": lq, "L": length}

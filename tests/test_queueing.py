@@ -72,3 +72,47 @@ def test_mmc_rejects_bad_server_count():
 def test_mmc_rejects_unstable_queue():
     with pytest.raises(ValueError, match="unstable"):
         mmc(4.0, 1.5, 2)  # a=2.667, rho=1.333 >= 1
+
+
+from core.process_analysis.queueing import vut
+
+# VUT (Sakasegawa G/G/c, reduces to Kingman at c=1):
+#   Wq ~= V * U * T
+#   V = (Ca^2 + Cs^2)/2
+#   U = rho^(sqrt(2(c+1)) - 1) / (c*(1-rho))
+#   T = 1/mu
+# At lambda=8, mu=10, c=1, Ca=Cs=1: V=1, exponent=sqrt(4)-1=1,
+#   U = 0.8/0.2 = 4, T = 0.1 -> Wq = 0.4 == exact M/M/1.
+
+
+def test_vut_reduces_to_mm1_when_markovian():
+    r = vut(8.0, 10.0, 1, 1.0, 1.0)
+    assert r["V"] == pytest.approx(1.0)
+    assert r["U"] == pytest.approx(4.0)
+    assert r["T"] == pytest.approx(0.1)
+    assert r["Wq"] == pytest.approx(0.4)
+    assert r["Wq"] == pytest.approx(mm1(8.0, 10.0)["Wq"])
+
+
+def test_vut_low_arrival_variability_cuts_the_wait():
+    # Deterministic arrivals (Ca=0), exponential service (Cs=1): V=0.5
+    r = vut(8.0, 10.0, 1, 0.0, 1.0)
+    assert r["V"] == pytest.approx(0.5)
+    assert r["Wq"] == pytest.approx(0.2)
+
+
+def test_vut_multiserver_approximates_mmc():
+    # Same case as the exact M/M/c trace; Sakasegawa is an approximation.
+    approx = vut(2.0, 1.5, 2, 1.0, 1.0)["Wq"]
+    exact = mmc(2.0, 1.5, 2)["Wq"]
+    assert approx == pytest.approx(exact, rel=0.1)
+
+
+def test_vut_rejects_negative_cv():
+    with pytest.raises(ValueError, match="variation"):
+        vut(8.0, 10.0, 1, -1.0, 1.0)
+
+
+def test_vut_rejects_unstable_queue():
+    with pytest.raises(ValueError, match="unstable"):
+        vut(10.0, 8.0, 1, 1.0, 1.0)
